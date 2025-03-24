@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Completo - Análise de Performance</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3a4f6c;
+            --secondary-color: #4e8cff;
+            --accent-color: #ff6b6b;
+            --success-color: #6bcebb;
+            --light-color: #f8f9fa;
+            --dark-color: #2c3e50;
+            --text-color: #495057;
+            --border-color: #e9ecef;
+            --table-header: #f1f3f5;
+            --table-row-even: #f8f9fa;
+            --table-row-odd: #ffffff;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+            color: white;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 2.2rem;
+            letter-spacing: -0.5px;
+        }
+        
+        .header-description {
+            max-width: 800px;
+            margin: 0.5rem auto 0;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        .dashboard-section {
+            margin-bottom: 3rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .section-title i {
+            color: var(--secondary-color);
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 1.8rem;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+        
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        }
+        
+        .chart-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+            text-align: center;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 280px;
+            width: 100%;
+        }
+        
+        .control-panel {
+            background-color: white;
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+            margin-bottom: 2.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+        
+        .month-selector {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .month-btn {
+            padding: 0.7rem 1.8rem;
+            background-color: var(--light-color);
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--dark-color);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .month-btn:hover, .month-btn.active {
+            background: linear-gradient(135deg, var(--secondary-color), #3a7bd5);
+            color: white;
+            box-shadow: 0 4px 12px rgba(78, 140, 255, 0.3);
+        }
+        
+        .comparison-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background: linear-gradient(135deg, var(--secondary-color), #3a7bd5);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .toggle-label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .info-text {
+            text-align: center;
+            margin: 1rem 0 2rem;
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        /* Estilos para tabelas */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+        }
+        
+        .data-table th, .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .data-table th {
+            background-color: var(--table-header);
+            font-weight: 600;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: var(--table-row-even);
+        }
+        
+        .data-table tr:nth-child(odd) {
+            background-color: var(--table-row-odd);
+        }
+        
+        .data-table tr:hover {
+            background-color: #f1f5ff;
+        }
+        
+        .data-table td {
+            font-weight: 500;
+        }
+        
+        .positive-change {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+        
+        .negative-change {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+        
+        .table-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+            margin-bottom: 3rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .table-scroll {
+            overflow-x: auto;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-top: 3rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tab-btn {
+            padding: 0.8rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-color);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            color: var(--secondary-color);
+            border-bottom: 3px solid var(--secondary-color);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .month-selector {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .month-btn {
+                width: 100%;
+            }
+            
+            .control-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
+            
+            .tab-container {
+                overflow-x: auto;
+                white-space: nowrap;
+                padding-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Análise Completa de Performance</h1>
+            <p class="header-description">Comparativo detalhado entre Novembro e Dezembro com gráficos interativos e tabelas completas</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <section class="control-panel">
+            <div class="month-selector">
+                <button id="novBtn" class="month-btn active">
+                    <i class="fas fa-calendar-alt"></i> Novembro
+                </button>
+                <button id="dezBtn" class="month-btn">
+                    <i class="fas fa-calendar-alt"></i> Dezembro
+                </button>
+                <button id="compareBtn" class="month-btn">
+                    <i class="fas fa-exchange-alt"></i> Modo Comparativo
+                </button>
+            </div>
+            
+            <div class="comparison-toggle">
+                <span class="toggle-label">Lado a Lado:</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="showComparison">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </section>
+        
+        <p class="info-text">Clique nos itens da legenda para filtrar os dados. Passe o mouse sobre os gráficos para mais detalhes.</p>
+        
+        <!-- Seção de Gráficos -->
+        <section class="dashboard-section">
+            <h2 class="section-title"><i class="fas fa-chart-pie"></i> Visualização Gráfica</h2>
+            
+            <div class="dashboard-grid" id="novGrid">
+                <!-- Gráficos de Novembro serão inseridos aqui -->
+            </div>
+            
+            <div class="dashboard-grid" id="dezGrid" style="display: none;">
+                <!-- Gráficos de Dezembro serão inseridos aqui -->
+            </div>
+            
+            <div class="dashboard-grid" id="compareGrid" style="display: none;">
+                <!-- Gráficos Comparativos serão inseridos aqui -->
+            </div>
+        </section>
+        
+        <!-- Seção de Tabelas -->
+        <section class="dashboard-section">
+            <h2 class="section-title"><i class="fas fa-table"></i> Dados Tabulares</h2>
+            
+            <div class="tab-container">
+                <button class="tab-btn active" data-tab="nov-tab">Novembro</button>
+                <button class="tab-btn" data-tab="dez-tab">Dezembro</button>
+                <button class="tab-btn" data-tab="compare-tab">Comparativo</button>
+                <button class="tab-btn" data-tab="variation-tab">Variação</button>
+            </div>
+            
+            <div class="table-container">
+                <div id="nov-tab" class="tab-content active">
+                    <div class="table-scroll">
+                        <table class="data-table" id="nov-table">
+                            <!-- Tabela de Novembro será inserida aqui -->
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="dez-tab" class="tab-content">
+                    <div class="table-scroll">
+                        <table class="data-table" id="dez-table">
+                            <!-- Tabela de Dezembro será inserida aqui -->
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="compare-tab" class="tab-content">
+                    <div class="table-scroll">
+                        <table class="data-table" id="compare-table">
+                            <!-- Tabela Comparativa será inserida aqui -->
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="variation-tab" class="tab-content">
+                    <div class="table-scroll">
+                        <table class="data-table" id="variation-table">
+                            <!-- Tabela de Variação será inserida aqui -->
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <footer>
+            Dashboard desenvolvido para análise comparativa de performance | Dados de Novembro e Dezembro
+        </footer>
+    </div>
+    
+    <script>
+        // Configuração de cores
+        const storeColors = [
+            '#4e8cff', '#ff6b6b', '#6bcebb', '#ffc154', '#a178df', '#47b8e0', '#7dd857'
+        ];
+        
+        // Nomes das lojas
+        const storeNames = ['Fit Beach DL', 'Fit Beach RM', 'Fit Beach GRB', 'Befitness', 'Colcci Iguatemi', 'Colcci RM', 'Colcci Recife'];
+        
+        // Métricas disponíveis
+        const metrics = [
+            { id: 'cmv', name: 'CMV', title: 'Custo da Mercadoria Vendida', unit: '%' },
+            { id: 'fin', name: 'Despesas Financeiras', title: 'Despesas Financeiras', unit: '%' },
+            { id: 'fiscal', name: 'Custos Fiscais', title: 'Custos Fiscais', unit: '%' },
+            { id: 'ocupacao', name: 'Ocupação', title: 'Taxa de Ocupação', unit: '%' },
+            { id: 'pessoal', name: 'Pessoal', title: 'Custos com Pessoal', unit: '%' },
+            { id: 'adm', name: 'ADM Gerais', title: 'Despesas Administrativas', unit: '%' },
+            { id: 'resultado', name: 'Resultado', title: 'Resultado Operacional', unit: '%' }
+        ];
+        
+        // Dados de Novembro
+        const novData = {
+            cmv: [14.86, 14.48, 15.88, 17.55, 33.77, 31.47, 26.75],
+            fin: [4.38, 2.68, 4.55, 4.36, 3.90, 5.45, 3.79],
+            fiscal: [10.14, 7.04, 11.41, 8.95, 10.73, 37.83, 17.69],
+            ocupacao: [4.08, 6.89, 2.66, 4.79, 5.94, 17.91, 5.13],
+            pessoal: [18.60, 12.97, 17.27, 15.17, 19.26, 51.56, 10.24],
+            adm: [11.40, 1.44, 5.84, 3.52, 1.60, 29.30, 2.03],
+            resultado: [36.24, 53.74, 42.13, 43.49, 21.20, 10.00, 34.38]
+        };
+        
+        // Dados de Dezembro
+        const dezData = {
+            cmv: [12.97, 10.52, 16.31, 12.35, 33.77, 32.47, 29.80],
+            fin: [3.75, 0.01, 4.03, 3.67, 3.90, 6.53, 7.06],
+            fiscal: [10.95, 8.19, 11.35, 8.99, 10.73, 14.18, 15.43],
+            ocupacao: [9.02, 9.83, 4.25, 10.51, 5.94, 7.43, 2.39],
+            pessoal: [20.56, 11.34, 16.37, 15.32, 19.26, 6.58, 9.72],
+            adm: [11.43, 3.14, 4.84, 3.34, 1.60, 2.72, 0.96],
+            resultado: [30.04, 55.78, 41.89, 42.48, 21.20, 30.50, 34.64]
+        };
+        
+        // Configuração comum para os gráficos
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        padding: 15,
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        font: {
+                            weight: '600'
+                        }
+                    },
+                    onClick: function(e, legendItem, legend) {
+                        const index = legendItem.datasetIndex;
+                        const ci = legend.chart;
+                        
+                        if (ci.isDatasetVisible(index)) {
+                            ci.hide(index);
+                            legendItem.hidden = true;
+                        } else {
+                            ci.show(index);
+                            legendItem.hidden = false;
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += context.raw.toFixed(2) + '%';
+                            return label;
+                        }
+                    },
+                    displayColors: true,
+                    usePointStyle: true,
+                    bodyFont: {
+                        weight: '600'
+                    }
+                },
+                datalabels: {
+                    formatter: (value, context) => {
+                        return value.toFixed(1) + '%';
+                    },
+                    color: '#fff',
+                    font: {
+                        weight: 'bold',
+                        size: 10
+                    },
+                    anchor: 'center',
+                    align: 'center',
+                    offset: 0,
+                    clip: false,
+                    display: function(context) {
+                        return context.dataset.data[context.dataIndex] > 5;
+                    }
+                }
+            },
+            cutout: '60%',
+            borderRadius: 4,
+            spacing: 2
+        };
+        
+        // Inicialização do Dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Registrar plugins
+            Chart.register(ChartDataLabels);
+            
+            // Criar elementos
+            createChartElements();
+            createTableElements();
+            
+            // Inicializar gráficos
+            initCharts();
+            
+            // Configurar controles
+            setupMonthButtons();
+            setupComparisonToggle();
+            setupTableTabs();
+        });
+        
+        // Criar elementos HTML para os gráficos
+        function createChartElements() {
+            const novGrid = document.getElementById('novGrid');
+            const dezGrid = document.getElementById('dezGrid');
+            const compareGrid = document.getElementById('compareGrid');
+            
+            metrics.forEach(metric => {
+                // Gráficos de Novembro
+                const novCard = document.createElement('div');
+                novCard.className = 'chart-card';
+                novCard.innerHTML = `
+                    <h3 class="chart-title">${metric.title} - Novembro</h3>
+                    <div class="chart-container">
+                        <canvas id="${metric.id}NovChart"></canvas>
+                    </div>
+                `;
+                novGrid.appendChild(novCard);
+                
+                // Gráficos de Dezembro
+                const dezCard = document.createElement('div');
+                dezCard.className = 'chart-card';
+                dezCard.innerHTML = `
+                    <h3 class="chart-title">${metric.title} - Dezembro</h3>
+                    <div class="chart-container">
+                        <canvas id="${metric.id}DezChart"></canvas>
+                    </div>
+                `;
+                dezGrid.appendChild(dezCard);
+                
+                // Gráficos Comparativos
+                const compareCard = document.createElement('div');
+                compareCard.className = 'chart-card';
+                compareCard.innerHTML = `
+                    <h3 class="chart-title">Comparativo ${metric.title}</h3>
+                    <div class="chart-container">
+                        <canvas id="${metric.id}CompareChart"></canvas>
+                    </div>
+                `;
+                compareGrid.appendChild(compareCard);
+            });
+        }
+        
+        // Criar elementos HTML para as tabelas
+        function createTableElements() {
+            const novTable = document.getElementById('nov-table');
+            const dezTable = document.getElementById('dez-table');
+            const compareTable = document.getElementById('compare-table');
+            const variationTable = document.getElementById('variation-table');
+            
+            // Cabeçalho das tabelas
+            const tableHeader = `
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        ${storeNames.map(store => `<th>${store}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+            
+            novTable.innerHTML = tableHeader;
+            dezTable.innerHTML = tableHeader;
+            compareTable.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        ${storeNames.map(store => `<th colspan="2">${store}</th>`).join('')}
+                    </tr>
+                    <tr>
+                        <th></th>
+                        ${storeNames.map(() => `<th>Nov</th><th>Dez</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+            
+            variationTable.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        ${storeNames.map(store => `<th>${store}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+            
+            // Preencher dados nas tabelas
+            metrics.forEach(metric => {
+                // Tabela de Novembro
+                novTable.querySelector('tbody').innerHTML += `
+                    <tr>
+                        <td>${metric.name}</td>
+                        ${novData[metric.id].map(value => `<td>${value.toFixed(2)}%</td>`).join('')}
+                    </tr>
+                `;
+                
+                // Tabela de Dezembro
+                dezTable.querySelector('tbody').innerHTML += `
+                    <tr>
+                        <td>${metric.name}</td>
+                        ${dezData[metric.id].map(value => `<td>${value.toFixed(2)}%</td>`).join('')}
+                    </tr>
+                `;
+                
+                // Tabela Comparativa
+                compareTable.querySelector('tbody').innerHTML += `
+                    <tr>
+                        <td>${metric.name}</td>
+                        ${novData[metric.id].map((value, i) => `
+                            <td>${value.toFixed(2)}%</td>
+                            <td>${dezData[metric.id][i].toFixed(2)}%</td>
+                        `).join('')}
+                    </tr>
+                `;
+                
+                // Tabela de Variação
+                variationTable.querySelector('tbody').innerHTML += `
+                    <tr>
+                        <td>${metric.name}</td>
+                        ${novData[metric.id].map((novValue, i) => {
+                            const dezValue = dezData[metric.id][i];
+                            const variation = dezValue - novValue;
+                            const variationClass = variation >= 0 ? 'positive-change' : 'negative-change';
+                            const variationSymbol = variation >= 0 ? '+' : '';
+                            return `
+                                <td class="${variationClass}">
+                                    ${variationSymbol}${variation.toFixed(2)}%
+                                </td>
+                            `;
+                        }).join('')}
+                    </tr>
+                `;
+            });
+            
+            // Fechar tbody nas tabelas
+            novTable.innerHTML += '</tbody>';
+            dezTable.innerHTML += '</tbody>';
+            compareTable.innerHTML += '</tbody>';
+            variationTable.innerHTML += '</tbody>';
+        }
+        
+        // Inicializar gráficos
+        function initCharts() {
+            metrics.forEach(metric => {
+                // Novembro
+                createPieChart(
+                    `${metric.id}NovChart`,
+                    storeNames,
+                    novData[metric.id],
+                    `${metric.title} - Novembro (%)`,
+                    true
+                );
+                
+                // Dezembro
+                createPieChart(
+                    `${metric.id}DezChart`,
+                    storeNames,
+                    dezData[metric.id],
+                    `${metric.title} - Dezembro (%)`,
+                    true
+                );
+                
+                // Comparativo
+                createComparisonChart(
+                    `${metric.id}CompareChart`,
+                    metric.title
+                );
+            });
+        }
+        
+        // Função para criar gráficos de pizza
+        function createPieChart(canvasId, labels, data, title, showDataLabels) {
+            return new Chart(
+                document.getElementById(canvasId),
+                {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: storeColors,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        ...chartOptions,
+                        plugins: {
+                            ...chartOptions.plugins,
+                            title: {
+                                display: true,
+                                text: title,
+                                font: {
+                                    size: 14,
+                                    weight: '600'
+                                },
+                                padding: {
+                                    top: 0,
+                                    bottom: 15
+                                }
+                            },
+                            datalabels: {
+                                ...chartOptions.plugins.datalabels,
+                                display: showDataLabels
+                            }
+                        }
+                    }
+                }
+            );
+        }
+        
+        // Função para criar gráficos comparativos
+        function createComparisonChart(canvasId, title) {
+            const metricId = canvasId.replace('CompareChart', '');
+            
+            return new Chart(
+                document.getElementById(canvasId),
+                {
+                    type: 'pie',
+                    data: {
+                        labels: [...storeNames.map(name => `${name} (Nov)`), ...storeNames.map(name => `${name} (Dez)`)],
+                        datasets: [
+                            {
+                                label: 'Novembro',
+                                data: novData[metricId],
+                                backgroundColor: storeColors,
+                                borderColor: '#fff',
+                                borderWidth: 2
+                            },
+                            {
+                                label: 'Dezembro',
+                                data: dezData[metricId],
+                                backgroundColor: storeColors.map(color => color + 'CC'),
+                                borderColor: '#fff',
+                                borderWidth: 2
+                            }
+                        ]
+                    },
+                    options: {
+                        ...chartOptions,
+                        plugins: {
+                            ...chartOptions.plugins,
+                            title: {
+                                display: true,
+                                text: `Comparativo ${title} (%)`,
+                                font: {
+                                    size: 14,
+                                    weight: '600'
+                                },
+                                padding: {
+                                    top: 0,
+                                    bottom: 15
+                                }
+                            },
+                            tooltip: {
+                                ...chartOptions.plugins.tooltip,
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.dataset.label === 'Novembro' 
+                                            ? `${context.label.replace(' (Nov)', '')} (Nov)` 
+                                            : `${context.label.replace(' (Dez)', '')} (Dez)`;
+                                        return `${label}: ${context.raw.toFixed(2)}%`;
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            );
+        }
+        
+        // Configurar botões de mês
+        function setupMonthButtons() {
+            document.getElementById('novBtn').addEventListener('click', function() {
+                document.getElementById('novBtn').classList.add('active');
+                document.getElementById('dezBtn').classList.remove('active');
+                document.getElementById('compareBtn').classList.remove('active');
+                
+                document.getElementById('novGrid').style.display = 'grid';
+                document.getElementById('dezGrid').style.display = 'none';
+                document.getElementById('compareGrid').style.display = 'none';
+            });
+            
+            document.getElementById('dezBtn').addEventListener('click', function() {
+                document.getElementById('novBtn').classList.remove('active');
+                document.getElementById('dezBtn').classList.add('active');
+                document.getElementById('compareBtn').classList.remove('active');
+                
+                document.getElementById('novGrid').style.display = 'none';
+                document.getElementById('dezGrid').style.display = 'grid';
+                document.getElementById('compareGrid').style.display = 'none';
+            });
+            
+            document.getElementById('compareBtn').addEventListener('click', function() {
+                document.getElementById('novBtn').classList.remove('active');
+                document.getElementById('dezBtn').classList.remove('active');
+                document.getElementById('compareBtn').classList.add('active');
+                
+                document.getElementById('novGrid').style.display = 'none';
+                document.getElementById('dezGrid').style.display = 'none';
+                document.getElementById('compareGrid').style.display = 'grid';
+            });
+        }
+        
+        // Configurar toggle de comparação lado a lado
+        function setupComparisonToggle() {
+            document.getElementById('showComparison').addEventListener('change', function() {
+                if (this.checked) {
+                    document.getElementById('novGrid').style.display = 'grid';
+                    document.getElementById('dezGrid').style.display = 'grid';
+                    document.getElementById('compareGrid').style.display = 'none';
+                    
+                    document.querySelectorAll('.dashboard-grid').forEach(grid => {
+                        grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(350px, 1fr))';
+                    });
+                    
+                    document.getElementById('compareBtn').classList.remove('active');
+                } else {
+                    if (document.getElementById('compareBtn').classList.contains('active')) {
+                        document.getElementById('compareGrid').style.display = 'grid';
+                    } else if (document.getElementById('dezBtn').classList.contains('active')) {
+                        document.getElementById('dezGrid').style.display = 'grid';
+                    } else {
+                        document.getElementById('novGrid').style.display = 'grid';
+                    }
+                    
+                    document.querySelectorAll('.dashboard-grid').forEach(grid => {
+                        grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(380px, 1fr))';
+                    });
+                }
+            });
+        }
+        
+        // Configurar abas das tabelas
+        function setupTableTabs() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Remover active de todos
+                    tabBtns.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Adicionar active ao selecionado
+                    this.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        }
+    </script>
+</body>
+</html>
