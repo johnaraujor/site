@@ -1261,30 +1261,6 @@
                                     align: 'end',
                                     offset: 15,
                                     clip: false
-
-                                                    color: (context) => {
-                    // Usa a mesma cor da fatia para o texto do rótulo
-                    return context.dataset.backgroundColor[context.dataIndex];
-                },
-                labels: {
-                    value: {
-                        color: (context) => {
-                            // Cor do texto baseada na cor da fatia
-                            return context.dataset.backgroundColor[context.dataIndex];
-                        }
-                    }
-                },
-                        labelLine: {
-                            length: 30, // Comprimento da linha
-                            width: 2,   // Largura da linha
-                            color: (context) => {
-                                // Usa a mesma cor da fatia para a linha de conexão
-                                return context.dataset.backgroundColor[context.dataIndex];
-                            }
-                        }
-                                }
-                            }
-                        },
                                 }
                             }
                         },
