@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Financeiro Avançado | Análise Comparativa</title>
     <meta name="description" content="Dashboard interativo para análise comparativa de desempenho financeiro entre períodos">
-    <!-- Adicione favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
@@ -1177,16 +1176,26 @@
                         { name: 'Resultado 2', key: 'Resultado 2' }
                     ];
                     
-                    // Filtrar métricas que existem para esta empresa
+                    // Obter a Receita Líquida como base (100%)
+                    const receitaLiquida = Math.abs(Number(data1.dados['Receita Líquida']?.[empresa] || 1));
+                    
+                    // Filtrar métricas que existem para esta empresa (exceto Receita Líquida)
                     const validMetrics = metrics.filter(metric => 
+                        metric.key !== 'Receita Líquida' && 
                         data1.dados[metric.key] && 
                         data1.dados[metric.key][empresa] !== undefined && 
                         data1.dados[metric.key][empresa] !== ""
                     );
                     
-                    // Obter valores e calcular totais
-                    const values = validMetrics.map(metric => Math.abs(Number(data1.dados[metric.key][empresa])));
-                    const total = values.reduce((sum, value) => sum + value, 0);
+                    // Calcular valores em relação à Receita Líquida (100%)
+                    const values = validMetrics.map(metric => {
+                        const valorAbsoluto = Math.abs(Number(data1.dados[metric.key][empresa]));
+                        return (valorAbsoluto / receitaLiquida) * 100;
+                    });
+                    
+                    // Adicionar a Receita Líquida como 100% no início
+                    validMetrics.unshift({ name: 'Receita Líquida', key: 'Receita Líquida' });
+                    values.unshift(100);
                     
                     // Configurar cores para cada métrica
                     const backgroundColors = [
@@ -1225,52 +1234,27 @@
                             responsive: true,
                             maintainAspectRatio: false,
                             layout: {
-                                padding: {
-                                top: 40,    // Margem superior
-                                bottom: 40, // Margem inferior
-                                left: 10,   // Margem esquerda (opcional)
-                                right: 10   // Margem direita (opcional)
-            }
+                                padding: 20
                             },
                             plugins: {
                                 legend: { display: false },
                                 tooltip: {
                                     callbacks: {
                                         label: function(context) {
-                                            const value = context.raw;
-                                            const percentage = ((value / total) * 100).toFixed(2);
-                                            return `${context.label}: R$ ${value.toLocaleString('pt-BR')} (${percentage}%)`;
+                                            const percentage = context.raw.toFixed(1);
+                                            const absoluteValue = (receitaLiquida * context.raw / 100).toLocaleString('pt-BR');
+                                            return `${context.label}: ${percentage}% (R$ ${absoluteValue})`;
                                         }
                                     }
                                 },
                                 datalabels: {
-                                    formatter: (value) => ((value / total) * 100).toFixed(2) + '%',
+                                    formatter: (value) => value.toFixed(1) + '%',
                                     color: '#333',
-                                    font: { weight: 'bold', size: 15 },
+                                    font: { weight: 'bold', size: 12 },
                                     anchor: 'end',
                                     align: 'end',
                                     offset: 15,
-                                    clip: false,
-                color: (context) => {
-                    // Usa a mesma cor da fatia para o texto do rótulo
-                    return context.dataset.backgroundColor[context.dataIndex];
-                },
-                labels: {
-                    value: {
-                        color: (context) => {
-                            // Cor do texto baseada na cor da fatia
-                            return context.dataset.backgroundColor[context.dataIndex];
-                        }
-                    }
-                },
-                        labelLine: {
-                            length: 30, // Comprimento da linha
-                            width: 2,   // Largura da linha
-                            color: (context) => {
-                                // Usa a mesma cor da fatia para a linha de conexão
-                                return context.dataset.backgroundColor[context.dataIndex];
-                            }
-                        }
+                                    clip: false
                                 }
                             }
                         },
@@ -1280,15 +1264,15 @@
                     // Criar legenda
                     legendDiv.innerHTML = '';
                     validMetrics.forEach((metric, index) => {
-                        const value = data1.dados[metric.key][empresa];
-                        const percentage = ((Math.abs(Number(value)) / total) * 100).toFixed(2);
+                        const percentage = values[index].toFixed(1);
+                        const absoluteValue = (receitaLiquida * values[index] / 100).toLocaleString('pt-BR');
                         
                         const legendItem = document.createElement('div');
                         legendItem.className = 'legend-item';
                         legendItem.innerHTML = `
                             <span class="legend-color" style="background-color: ${backgroundColors[index]}"></span>
                             ${metric.name}: <span class="percentage-value">${percentage}%</span>
-                            (R$ ${Math.abs(Number(value)).toLocaleString('pt-BR')})
+                            (R$ ${absoluteValue})
                         `;
                         legendDiv.appendChild(legendItem);
                     });
