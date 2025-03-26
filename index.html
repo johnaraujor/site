@@ -3,76 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Completo - Análise de Performance</title>
+    <title>Dashboard Financeiro Avançado</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
-            --primary-color: #3a4f6c;
-            --secondary-color: #4e8cff;
-            --accent-color: #ff6b6b;
-            --success-color: #6bcebb;
-            --light-color: #f8f9fa;
-            --dark-color: #2c3e50;
-            --text-color: #495057;
-            --border-color: #e9ecef;
-            --table-header: #f1f3f5;
-            --table-row-even: #f8f9fa;
-            --table-row-odd: #ffffff;
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #ef233c;
+            --gray: #6c757d;
+            --white: #ffffff;
+            --card-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
         
         body {
             font-family: 'Montserrat', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--light-color);
-            color: var(--text-color);
+            background-color: #f5f7ff;
+            color: var(--dark);
             line-height: 1.6;
-        }
-        
-        header {
-            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
-            color: white;
-            padding: 2rem 1.5rem;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-        
-        h1 {
-            margin: 0;
-            font-weight: 700;
-            font-size: 2.2rem;
-            letter-spacing: -0.5px;
-        }
-        
-        .header-description {
-            max-width: 800px;
-            margin: 0.5rem auto 0;
-            opacity: 0.9;
-            font-weight: 500;
         }
         
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 0 1.5rem;
+            padding: 2rem;
         }
         
-        .dashboard-section {
-            margin-bottom: 3rem;
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: var(--gray);
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .upload-section {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+            text-align: center;
+            transition: var(--transition);
+        }
+        
+        .upload-section:hover {
+            box-shadow: 0 6px 30px rgba(0,0,0,0.12);
+        }
+        
+        .dashboard {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .month-comparison {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        select {
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            background-color: var(--white);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: var(--transition);
+            min-width: 200px;
+            cursor: pointer;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+        
+        button:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .company-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            padding: 1.5rem;
+            transition: var(--transition);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card-title i {
+            color: var(--primary);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            justify-content: center;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            background: rgba(67, 97, 238, 0.1);
+            padding: 0.5rem 0.8rem;
+            border-radius: 20px;
+            transition: var(--transition);
+        }
+        
+        .legend-item:hover {
+            background: rgba(67, 97, 238, 0.2);
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            margin-right: 0.5rem;
+        }
+        
+        .percentage-value {
+            font-weight: 600;
+            margin-left: 0.3rem;
+        }
+        
+        /* Tabelas */
+        .data-section {
+            margin-top: 2rem;
         }
         
         .section-title {
             font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
+            font-weight: 600;
+            color: var(--secondary);
             margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
@@ -80,870 +241,649 @@
         }
         
         .section-title i {
-            color: var(--secondary-color);
-        }
-        
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-        
-        .chart-card {
-            background-color: white;
-            border-radius: 12px;
-            padding: 1.8rem;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
-            border: 1px solid var(--border-color);
-        }
-        
-        .chart-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
-        }
-        
-        .chart-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: var(--primary-color);
-            text-align: center;
-            padding-bottom: 0.8rem;
-            border-bottom: 2px solid var(--border-color);
-        }
-        
-        .chart-container {
-            position: relative;
-            height: 280px;
-            width: 100%;
-        }
-        
-        .control-panel {
-            background-color: white;
-            border-radius: 12px;
-            padding: 1.5rem 2rem;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.05);
-            margin-bottom: 2.5rem;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 1.5rem;
-            align-items: center;
-            border: 1px solid var(--border-color);
-        }
-        
-        .month-selector {
-            display: flex;
-            gap: 1rem;
-        }
-        
-        .month-btn {
-            padding: 0.7rem 1.8rem;
-            background-color: var(--light-color);
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: var(--dark-color);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .month-btn:hover, .month-btn.active {
-            background: linear-gradient(135deg, var(--secondary-color), #3a7bd5);
-            color: white;
-            box-shadow: 0 4px 12px rgba(78, 140, 255, 0.3);
-        }
-        
-        .comparison-toggle {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-        
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-        }
-        
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 24px;
-        }
-        
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        
-        input:checked + .slider {
-            background: linear-gradient(135deg, var(--secondary-color), #3a7bd5);
-        }
-        
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-        
-        .toggle-label {
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-        
-        .info-text {
-            text-align: center;
-            margin: 1rem 0 2rem;
-            font-size: 0.9rem;
-            color: #6c757d;
-            font-style: italic;
-        }
-        
-        /* Estilos para tabelas */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1.5rem 0;
-            background-color: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.05);
-        }
-        
-        .data-table th, .data-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .data-table th {
-            background-color: var(--table-header);
-            font-weight: 600;
-            color: var(--primary-color);
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 0.5px;
-        }
-        
-        .data-table tr:nth-child(even) {
-            background-color: var(--table-row-even);
-        }
-        
-        .data-table tr:nth-child(odd) {
-            background-color: var(--table-row-odd);
-        }
-        
-        .data-table tr:hover {
-            background-color: #f1f5ff;
-        }
-        
-        .data-table td {
-            font-weight: 500;
-        }
-        
-        .positive-change {
-            color: var(--success-color);
-            font-weight: 600;
-        }
-        
-        .negative-change {
-            color: var(--accent-color);
-            font-weight: 600;
+            color: var(--primary);
         }
         
         .table-container {
-            background-color: white;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.05);
-            margin-bottom: 3rem;
-            border: 1px solid var(--border-color);
-        }
-        
-        .table-scroll {
             overflow-x: auto;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
         }
         
-        footer {
-            text-align: center;
-            padding: 2rem;
-            color: #6c757d;
-            font-size: 0.9rem;
-            margin-top: 3rem;
-            border-top: 1px solid var(--border-color);
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
         }
         
-        .tab-container {
-            display: flex;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
+        th {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
         }
         
-        .tab-btn {
-            padding: 0.8rem 1.5rem;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            color: var(--text-color);
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
         }
         
-        .tab-btn.active {
-            color: var(--secondary-color);
-            border-bottom: 3px solid var(--secondary-color);
+        tr:nth-child(even) {
+            background-color: rgba(67, 97, 238, 0.03);
         }
         
-        .tab-content {
-            display: none;
+        tr:hover {
+            background-color: rgba(67, 97, 238, 0.08);
         }
         
-        .tab-content.active {
-            display: block;
+        .positive {
+            color: var(--success);
+            font-weight: 500;
         }
         
+        .negative {
+            color: var(--danger);
+            font-weight: 500;
+        }
+        
+        .neutral {
+            color: var(--gray);
+        }
+        
+        .variation {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-weight: 500;
+        }
+        
+        .variation.up {
+            color: var(--success);
+        }
+        
+        .variation.down {
+            color: var(--danger);
+        }
+        
+        .variation i {
+            font-size: 0.8rem;
+        }
+        
+        /* Responsividade */
         @media (max-width: 768px) {
-            .dashboard-grid {
+            .container {
+                padding: 1rem;
+            }
+            
+            .company-cards {
                 grid-template-columns: 1fr;
             }
             
-            .month-selector {
-                flex-direction: column;
-                width: 100%;
-            }
-            
-            .month-btn {
-                width: 100%;
-            }
-            
-            .control-panel {
+            .controls {
                 flex-direction: column;
                 align-items: stretch;
             }
             
-            .chart-container {
-                height: 250px;
+            .month-comparison {
+                flex-direction: column;
+                align-items: stretch;
             }
             
-            .tab-container {
-                overflow-x: auto;
-                white-space: nowrap;
-                padding-bottom: 5px;
+            select, button {
+                width: 100%;
             }
+        }
+        
+        /* Animações */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1>Análise Completa de Performance</h1>
-            <p class="header-description">Comparativo detalhado entre Novembro e Dezembro com gráficos interativos e tabelas completas</p>
-        </div>
-    </header>
-    
     <div class="container">
-        <section class="control-panel">
-            <div class="month-selector">
-                <button id="novBtn" class="month-btn active">
-                    <i class="fas fa-calendar-alt"></i> Novembro
-                </button>
-                <button id="dezBtn" class="month-btn">
-                    <i class="fas fa-calendar-alt"></i> Dezembro
-                </button>
-                <button id="compareBtn" class="month-btn">
-                    <i class="fas fa-exchange-alt"></i> Modo Comparativo
-                </button>
-            </div>
-            
-            <div class="comparison-toggle">
-                <span class="toggle-label">Lado a Lado:</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="showComparison">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </section>
+        <header>
+            <h1><i class="fas fa-chart-line"></i> Dashboard Financeiro Avançado</h1>
+            <p class="subtitle">Análise completa de desempenho financeiro com variação mensal</p>
+        </header>
         
-        <p class="info-text">Clique nos itens da legenda para filtrar os dados. Passe o mouse sobre os gráficos para mais detalhes.</p>
+        <div class="upload-section">
+            <h2>Carregar Dados Financeiros</h2>
+            <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;">
+            <button id="loadButton"><i class="fas fa-file-upload"></i> Selecionar Arquivo Excel</button>
+            <div id="fileName" style="margin-top: 1rem; font-size: 0.9rem; color: var(--gray);"></div>
+        </div>
         
-        <!-- Seção de Gráficos -->
-        <section class="dashboard-section">
-            <h2 class="section-title"><i class="fas fa-chart-pie"></i> Visualização Gráfica</h2>
-            
-            <div class="dashboard-grid" id="novGrid">
-                <!-- Gráficos de Novembro serão inseridos aqui -->
-            </div>
-            
-            <div class="dashboard-grid" id="dezGrid" style="display: none;">
-                <!-- Gráficos de Dezembro serão inseridos aqui -->
-            </div>
-            
-            <div class="dashboard-grid" id="compareGrid" style="display: none;">
-                <!-- Gráficos Comparativos serão inseridos aqui -->
-            </div>
-        </section>
-        
-        <!-- Seção de Tabelas -->
-        <section class="dashboard-section">
-            <h2 class="section-title"><i class="fas fa-table"></i> Dados Tabulares</h2>
-            
-            <div class="tab-container">
-                <button class="tab-btn active" data-tab="nov-tab">Novembro</button>
-                <button class="tab-btn" data-tab="dez-tab">Dezembro</button>
-                <button class="tab-btn" data-tab="compare-tab">Comparativo</button>
-                <button class="tab-btn" data-tab="variation-tab">Variação</button>
-            </div>
-            
-            <div class="table-container">
-                <div id="nov-tab" class="tab-content active">
-                    <div class="table-scroll">
-                        <table class="data-table" id="nov-table">
-                            <!-- Tabela de Novembro será inserida aqui -->
-                        </table>
-                    </div>
+        <div id="dashboard" class="dashboard">
+            <div class="controls">
+                <div class="month-comparison">
+                    <select id="month1Select">
+                        <option value="">Mês Base</option>
+                    </select>
+                    <select id="month2Select">
+                        <option value="">Comparar com</option>
+                    </select>
                 </div>
-                
-                <div id="dez-tab" class="tab-content">
-                    <div class="table-scroll">
-                        <table class="data-table" id="dez-table">
-                            <!-- Tabela de Dezembro será inserida aqui -->
-                        </table>
-                    </div>
-                </div>
-                
-                <div id="compare-tab" class="tab-content">
-                    <div class="table-scroll">
-                        <table class="data-table" id="compare-table">
-                            <!-- Tabela Comparativa será inserida aqui -->
-                        </table>
-                    </div>
-                </div>
-                
-                <div id="variation-tab" class="tab-content">
-                    <div class="table-scroll">
-                        <table class="data-table" id="variation-table">
-                            <!-- Tabela de Variação será inserida aqui -->
-                        </table>
-                    </div>
+                <button id="compareBtn"><i class="fas fa-exchange-alt"></i> Comparar Meses</button>
+            </div>
+            
+            <div class="company-cards" id="companyCards"></div>
+            
+            <div class="data-section">
+                <h2 class="section-title"><i class="fas fa-table"></i> Dados Tabulares Detalhados</h2>
+                <div class="table-container">
+                    <table id="detailedTable">
+                        <thead>
+                            <tr>
+                                <th>Empresa</th>
+                                <th>Métrica</th>
+                                <th id="month1Header">Mês Base</th>
+                                <th id="month2Header">Mês Comparação</th>
+                                <th>Variação</th>
+                                <th>% Variação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailedTableBody"></tbody>
+                    </table>
                 </div>
             </div>
-        </section>
-        
-        <footer>
-            Dashboard desenvolvido para análise comparativa de performance | Dados de Novembro e Dezembro
-        </footer>
+            
+            <div class="data-section">
+                <h2 class="section-title"><i class="fas fa-chart-bar"></i> Resumo Financeiro</h2>
+                <div class="table-container">
+                    <table id="summaryTable">
+                        <thead>
+                            <tr>
+                                <th>Empresa</th>
+                                <th>Receita Líquida</th>
+                                <th>CMV</th>
+                                <th>Despesas</th>
+                                <th>Resultado</th>
+                                <th>Margem</th>
+                                <th>Variação Resultado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summaryTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-    
+
     <script>
-        // Configuração de cores
-        const storeColors = [
-            '#4e8cff', '#ff6b6b', '#6bcebb', '#ffc154', '#a178df', '#47b8e0', '#7dd857'
-        ];
-        
-        // Nomes das lojas
-        const storeNames = ['Fit Beach DL', 'Fit Beach RM', 'Fit Beach GRB', 'Befitness', 'Colcci Iguatemi', 'Colcci RM', 'Colcci Recife'];
-        
-        // Métricas disponíveis
-        const metrics = [
-            { id: 'cmv', name: 'CMV', title: 'Custo da Mercadoria Vendida', unit: '%' },
-            { id: 'fin', name: 'Despesas Financeiras', title: 'Despesas Financeiras', unit: '%' },
-            { id: 'fiscal', name: 'Custos Fiscais', title: 'Custos Fiscais', unit: '%' },
-            { id: 'ocupacao', name: 'Ocupação', title: 'Taxa de Ocupação', unit: '%' },
-            { id: 'pessoal', name: 'Pessoal', title: 'Custos com Pessoal', unit: '%' },
-            { id: 'adm', name: 'ADM Gerais', title: 'Despesas Administrativas', unit: '%' },
-            { id: 'resultado', name: 'Resultado', title: 'Resultado Operacional', unit: '%' }
-        ];
-        
-        // Dados de Novembro
-        const novData = {
-            cmv: [14.86, 14.48, 15.88, 17.55, 44.30, 31.47, 26.75],
-            fin: [4.38, 2.68, 4.55, 4.36, 4.48, 5.45, 3.79],
-            fiscal: [10.14, 7.04, 11.41, 8.95, 13.65, 37.83, 17.69],
-            ocupacao: [4.08, 6.89, 2.66, 4.79, 6.92, 17.91, 5.13],
-            pessoal: [18.60, 12.97, 17.27, 11.29, 19.26, 51.56, 10.24],
-            adm: [11.40, 1.44, 5.84, 3.52, 4.61, 29.30, 2.03],
-            resultado: [36.24, 53.74, 42.13, 43.49, 1.62, 10.00, 34.38]
-        };
-        
-        // Dados de Dezembro
-        const dezData = {
-            cmv: [12.97, 10.52, 16.31, 12.35, 33.77, 32.47, 29.80],
-            fin: [3.75, 0.01, 4.03, 3.67, 3.90, 6.53, 7.06],
-            fiscal: [10.95, 8.19, 11.35, 8.99, 10.73, 14.18, 15.43],
-            ocupacao: [9.02, 9.83, 4.25, 10.51, 5.94, 7.43, 2.39],
-            pessoal: [20.56, 11.34, 16.37, 15.32, 19.26, 6.58, 9.72],
-            adm: [11.43, 3.14, 4.84, 3.34, 1.60, 2.72, 0.96],
-            resultado: [30.04, 55.78, 41.89, 42.48, 21.20, 30.50, 34.64]
-        };
-        
-        // Configuração comum para os gráficos
-        const chartOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right',
-                    labels: {
-                        padding: 15,
-                        usePointStyle: true,
-                        pointStyle: 'circle',
-                        font: {
-                            weight: '600'
-                        }
-                    },
-                    onClick: function(e, legendItem, legend) {
-                        const index = legendItem.datasetIndex;
-                        const ci = legend.chart;
-                        
-                        if (ci.isDatasetVisible(index)) {
-                            ci.hide(index);
-                            legendItem.hidden = true;
-                        } else {
-                            ci.show(index);
-                            legendItem.hidden = false;
-                        }
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            label += context.raw.toFixed(2) + '%';
-                            return label;
-                        }
-                    },
-                    displayColors: true,
-                    usePointStyle: true,
-                    bodyFont: {
-                        weight: '600'
-                    }
-                },
-                datalabels: {
-                    formatter: (value, context) => {
-                        return value.toFixed(1) + '%';
-                    },
-                    color: '#fff',
-                    font: {
-                        weight: 'bold',
-                        size: 10
-                    },
-                    anchor: 'center',
-                    align: 'center',
-                    offset: 0,
-                    clip: false,
-                    display: function(context) {
-                        return context.dataset.data[context.dataIndex] > 5;
-                    }
-                }
-            },
-            cutout: '60%',
-            borderRadius: 4,
-            spacing: 2
-        };
-        
-        // Inicialização do Dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            // Registrar plugins
+        // Verifica se todos os scripts foram carregados
+        function checkScriptsLoaded() {
+            if (typeof Chart === 'undefined' || typeof ChartDataLabels === 'undefined' || typeof XLSX === 'undefined') {
+                setTimeout(checkScriptsLoaded, 100);
+                return;
+            }
+            initDashboard();
+        }
+
+        // Inicializa o dashboard depois que todos os scripts estão carregados
+        function initDashboard() {
+            // Registrar o plugin globalmente
             Chart.register(ChartDataLabels);
             
-            // Criar elementos
-            createChartElements();
-            createTableElements();
+            let workbookData = null;
+            let charts = {};
+            let currentMonths = { month1: null, month2: null };
             
-            // Inicializar gráficos
-            initCharts();
-            
-            // Configurar controles
-            setupMonthButtons();
-            setupComparisonToggle();
-            setupTableTabs();
-        });
-        
-        // Criar elementos HTML para os gráficos
-        function createChartElements() {
-            const novGrid = document.getElementById('novGrid');
-            const dezGrid = document.getElementById('dezGrid');
-            const compareGrid = document.getElementById('compareGrid');
-            
-            metrics.forEach(metric => {
-                // Gráficos de Novembro
-                const novCard = document.createElement('div');
-                novCard.className = 'chart-card';
-                novCard.innerHTML = `
-                    <h3 class="chart-title">${metric.title} - Novembro</h3>
-                    <div class="chart-container">
-                        <canvas id="${metric.id}NovChart"></canvas>
-                    </div>
-                `;
-                novGrid.appendChild(novCard);
-                
-                // Gráficos de Dezembro
-                const dezCard = document.createElement('div');
-                dezCard.className = 'chart-card';
-                dezCard.innerHTML = `
-                    <h3 class="chart-title">${metric.title} - Dezembro</h3>
-                    <div class="chart-container">
-                        <canvas id="${metric.id}DezChart"></canvas>
-                    </div>
-                `;
-                dezGrid.appendChild(dezCard);
-                
-                // Gráficos Comparativos
-                const compareCard = document.createElement('div');
-                compareCard.className = 'chart-card';
-                compareCard.innerHTML = `
-                    <h3 class="chart-title">Comparativo ${metric.title}</h3>
-                    <div class="chart-container">
-                        <canvas id="${metric.id}CompareChart"></canvas>
-                    </div>
-                `;
-                compareGrid.appendChild(compareCard);
-            });
-        }
-        
-        // Criar elementos HTML para as tabelas
-        function createTableElements() {
-            const novTable = document.getElementById('nov-table');
-            const dezTable = document.getElementById('dez-table');
-            const compareTable = document.getElementById('compare-table');
-            const variationTable = document.getElementById('variation-table');
-            
-            // Cabeçalho das tabelas
-            const tableHeader = `
-                <thead>
-                    <tr>
-                        <th>Métrica</th>
-                        ${storeNames.map(store => `<th>${store}</th>`).join('')}
-                    </tr>
-                </thead>
-                <tbody>
-            `;
-            
-            novTable.innerHTML = tableHeader;
-            dezTable.innerHTML = tableHeader;
-            compareTable.innerHTML = `
-                <thead>
-                    <tr>
-                        <th>Métrica</th>
-                        ${storeNames.map(store => `<th colspan="2">${store}</th>`).join('')}
-                    </tr>
-                    <tr>
-                        <th></th>
-                        ${storeNames.map(() => `<th>Nov</th><th>Dez</th>`).join('')}
-                    </tr>
-                </thead>
-                <tbody>
-            `;
-            
-            variationTable.innerHTML = `
-                <thead>
-                    <tr>
-                        <th>Métrica</th>
-                        ${storeNames.map(store => `<th>${store}</th>`).join('')}
-                    </tr>
-                </thead>
-                <tbody>
-            `;
-            
-            // Preencher dados nas tabelas
-            metrics.forEach(metric => {
-                // Tabela de Novembro
-                novTable.querySelector('tbody').innerHTML += `
-                    <tr>
-                        <td>${metric.name}</td>
-                        ${novData[metric.id].map(value => `<td>${value.toFixed(2)}%</td>`).join('')}
-                    </tr>
-                `;
-                
-                // Tabela de Dezembro
-                dezTable.querySelector('tbody').innerHTML += `
-                    <tr>
-                        <td>${metric.name}</td>
-                        ${dezData[metric.id].map(value => `<td>${value.toFixed(2)}%</td>`).join('')}
-                    </tr>
-                `;
-                
-                // Tabela Comparativa
-                compareTable.querySelector('tbody').innerHTML += `
-                    <tr>
-                        <td>${metric.name}</td>
-                        ${novData[metric.id].map((value, i) => `
-                            <td>${value.toFixed(2)}%</td>
-                            <td>${dezData[metric.id][i].toFixed(2)}%</td>
-                        `).join('')}
-                    </tr>
-                `;
-                
-                // Tabela de Variação
-                variationTable.querySelector('tbody').innerHTML += `
-                    <tr>
-                        <td>${metric.name}</td>
-                        ${novData[metric.id].map((novValue, i) => {
-                            const dezValue = dezData[metric.id][i];
-                            const variation = dezValue - novValue;
-                            const variationClass = variation >= 0 ? 'positive-change' : 'negative-change';
-                            const variationSymbol = variation >= 0 ? '+' : '';
-                            return `
-                                <td class="${variationClass}">
-                                    ${variationSymbol}${variation.toFixed(2)}%
-                                </td>
-                            `;
-                        }).join('')}
-                    </tr>
-                `;
+            // Configura eventos de UI
+            document.getElementById('loadButton').addEventListener('click', function() {
+                document.getElementById('fileInput').click();
             });
             
-            // Fechar tbody nas tabelas
-            novTable.innerHTML += '</tbody>';
-            dezTable.innerHTML += '</tbody>';
-            compareTable.innerHTML += '</tbody>';
-            variationTable.innerHTML += '</tbody>';
-        }
-        
-        // Inicializar gráficos
-        function initCharts() {
-            metrics.forEach(metric => {
-                // Novembro
-                createPieChart(
-                    `${metric.id}NovChart`,
-                    storeNames,
-                    novData[metric.id],
-                    `${metric.title} - Novembro (%)`,
-                    true
-                );
+            document.getElementById('fileInput').addEventListener('change', function(e) {
+                const fileName = e.target.files[0]?.name || 'Nenhum arquivo selecionado';
+                document.getElementById('fileName').textContent = `Arquivo selecionado: ${fileName}`;
+                document.getElementById('fileName').className = 'pulse';
+                setTimeout(() => {
+                    document.getElementById('fileName').className = '';
+                }, 2000);
                 
-                // Dezembro
-                createPieChart(
-                    `${metric.id}DezChart`,
-                    storeNames,
-                    dezData[metric.id],
-                    `${metric.title} - Dezembro (%)`,
-                    true
-                );
-                
-                // Comparativo
-                createComparisonChart(
-                    `${metric.id}CompareChart`,
-                    metric.title
-                );
-            });
-        }
-        
-        // Função para criar gráficos de pizza
-        function createPieChart(canvasId, labels, data, title, showDataLabels) {
-            return new Chart(
-                document.getElementById(canvasId),
-                {
-                    type: 'pie',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            data: data,
-                            backgroundColor: storeColors,
-                            borderColor: '#fff',
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        ...chartOptions,
-                        plugins: {
-                            ...chartOptions.plugins,
-                            title: {
-                                display: true,
-                                text: title,
-                                font: {
-                                    size: 14,
-                                    weight: '600'
-                                },
-                                padding: {
-                                    top: 0,
-                                    bottom: 15
-                                }
-                            },
-                            datalabels: {
-                                ...chartOptions.plugins.datalabels,
-                                display: showDataLabels
-                            }
-                        }
-                    }
+                if (e.target.files.length > 0) {
+                    loadExcelFile(e.target.files[0]);
                 }
-            );
-        }
-        
-        // Função para criar gráficos comparativos
-        function createComparisonChart(canvasId, title) {
-            const metricId = canvasId.replace('CompareChart', '');
-            
-            return new Chart(
-                document.getElementById(canvasId),
-                {
-                    type: 'pie',
-                    data: {
-                        labels: [...storeNames.map(name => `${name} (Nov)`), ...storeNames.map(name => `${name} (Dez)`)],
-                        datasets: [
-                            {
-                                label: 'Novembro',
-                                data: novData[metricId],
-                                backgroundColor: storeColors,
-                                borderColor: '#fff',
-                                borderWidth: 2
-                            },
-                            {
-                                label: 'Dezembro',
-                                data: dezData[metricId],
-                                backgroundColor: storeColors.map(color => color + 'CC'),
-                                borderColor: '#fff',
-                                borderWidth: 2
-                            }
-                        ]
-                    },
-                    options: {
-                        ...chartOptions,
-                        plugins: {
-                            ...chartOptions.plugins,
-                            title: {
-                                display: true,
-                                text: `Comparativo ${title} (%)`,
-                                font: {
-                                    size: 14,
-                                    weight: '600'
-                                },
-                                padding: {
-                                    top: 0,
-                                    bottom: 15
-                                }
-                            },
-                            tooltip: {
-                                ...chartOptions.plugins.tooltip,
-                                callbacks: {
-                                    label: function(context) {
-                                        const label = context.dataset.label === 'Novembro' 
-                                            ? `${context.label.replace(' (Nov)', '')} (Nov)` 
-                                            : `${context.label.replace(' (Dez)', '')} (Dez)`;
-                                        return `${label}: ${context.raw.toFixed(2)}%`;
-                                    }
-                                }
-                            },
-                            datalabels: {
-                                display: false
-                            }
-                        }
-                    }
-                }
-            );
-        }
-        
-        // Configurar botões de mês
-        function setupMonthButtons() {
-            document.getElementById('novBtn').addEventListener('click', function() {
-                document.getElementById('novBtn').classList.add('active');
-                document.getElementById('dezBtn').classList.remove('active');
-                document.getElementById('compareBtn').classList.remove('active');
-                
-                document.getElementById('novGrid').style.display = 'grid';
-                document.getElementById('dezGrid').style.display = 'none';
-                document.getElementById('compareGrid').style.display = 'none';
-            });
-            
-            document.getElementById('dezBtn').addEventListener('click', function() {
-                document.getElementById('novBtn').classList.remove('active');
-                document.getElementById('dezBtn').classList.add('active');
-                document.getElementById('compareBtn').classList.remove('active');
-                
-                document.getElementById('novGrid').style.display = 'none';
-                document.getElementById('dezGrid').style.display = 'grid';
-                document.getElementById('compareGrid').style.display = 'none';
             });
             
             document.getElementById('compareBtn').addEventListener('click', function() {
-                document.getElementById('novBtn').classList.remove('active');
-                document.getElementById('dezBtn').classList.remove('active');
-                document.getElementById('compareBtn').classList.add('active');
+                const month1 = document.getElementById('month1Select').value;
+                const month2 = document.getElementById('month2Select').value;
                 
-                document.getElementById('novGrid').style.display = 'none';
-                document.getElementById('dezGrid').style.display = 'none';
-                document.getElementById('compareGrid').style.display = 'grid';
+                if (!month1) {
+                    alert('Selecione um mês base para comparação');
+                    return;
+                }
+                
+                currentMonths = { month1, month2 };
+                updateDashboard();
             });
-        }
-        
-        // Configurar toggle de comparação lado a lado
-        function setupComparisonToggle() {
-            document.getElementById('showComparison').addEventListener('change', function() {
-                if (this.checked) {
-                    document.getElementById('novGrid').style.display = 'grid';
-                    document.getElementById('dezGrid').style.display = 'grid';
-                    document.getElementById('compareGrid').style.display = 'none';
+            
+            function loadExcelFile(file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        processWorkbook(workbook);
+                    } catch (error) {
+                        console.error("Erro ao processar arquivo:", error);
+                        alert("Erro ao processar o arquivo. Verifique se o formato está correto.");
+                    }
+                };
+                
+                reader.onerror = function() {
+                    alert("Erro ao ler o arquivo.");
+                };
+                
+                reader.readAsArrayBuffer(file);
+            }
+            
+            function processWorkbook(workbook) {
+                try {
+                    workbookData = {};
                     
-                    document.querySelectorAll('.dashboard-grid').forEach(grid => {
-                        grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(350px, 1fr))';
+                    workbook.SheetNames.forEach(sheetName => {
+                        const worksheet = workbook.Sheets[sheetName];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        
+                        const empresas = jsonData[0].slice(1).filter(Boolean);
+                        const dados = {};
+                        
+                        // Processar cada linha de dados
+                        for (let i = 1; i < jsonData.length; i++) {
+                            const linha = jsonData[i];
+                            if (!linha || !linha[0]) continue;
+                            
+                            const categoria = linha[0].trim();
+                            const valores = linha.slice(1);
+                            
+                            dados[categoria] = {};
+                            empresas.forEach((empresa, index) => {
+                                if (empresa && valores[index] !== undefined && valores[index] !== "") {
+                                    dados[categoria][empresa] = valores[index];
+                                }
+                            });
+                        }
+                        
+                        workbookData[sheetName] = {
+                            empresas: empresas,
+                            dados: dados
+                        };
                     });
                     
-                    document.getElementById('compareBtn').classList.remove('active');
-                } else {
-                    if (document.getElementById('compareBtn').classList.contains('active')) {
-                        document.getElementById('compareGrid').style.display = 'grid';
-                    } else if (document.getElementById('dezBtn').classList.contains('active')) {
-                        document.getElementById('dezGrid').style.display = 'grid';
-                    } else {
-                        document.getElementById('novGrid').style.display = 'grid';
+                    // Mostrar dashboard
+                    document.getElementById('dashboard').style.display = 'block';
+                    
+                    // Preencher seletores de mês
+                    const month1Select = document.getElementById('month1Select');
+                    const month2Select = document.getElementById('month2Select');
+                    
+                    month1Select.innerHTML = '<option value="">Mês Base</option>';
+                    month2Select.innerHTML = '<option value="">Comparar com</option>';
+                    
+                    Object.keys(workbookData).forEach(month => {
+                        month1Select.innerHTML += `<option value="${month}">${month}</option>`;
+                        month2Select.innerHTML += `<option value="${month}">${month}</option>`;
+                    });
+                } catch (error) {
+                    console.error("Erro ao processar workbook:", error);
+                    alert("Erro ao processar os dados. Verifique o console para mais detalhes.");
+                }
+            }
+            
+            function updateDashboard() {
+                const { month1, month2 } = currentMonths;
+                
+                if (!month1) return;
+                
+                // Atualizar cabeçalhos das tabelas
+                document.getElementById('month1Header').textContent = month1;
+                document.getElementById('month2Header').textContent = month2 || 'N/A';
+                
+                // Renderizar gráficos e tabelas
+                renderCompanyCards(month1, month2);
+                renderDetailedTable(month1, month2);
+                renderSummaryTable(month1, month2);
+            }
+            
+            function renderCompanyCards(month1, month2 = null) {
+                try {
+                    const data1 = workbookData[month1];
+                    const data2 = month2 ? workbookData[month2] : null;
+                    const companyCardsDiv = document.getElementById('companyCards');
+                    companyCardsDiv.innerHTML = '';
+                    
+                    if (!data1) return;
+                    
+                    data1.empresas.forEach(empresa => {
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        card.innerHTML = `
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-building"></i> ${empresa}</h3>
+                                ${month2 ? `<span class="variation ${getVariationClass(data1, data2, empresa)}">
+                                    ${getVariationIcon(data1, data2, empresa)}
+                                    ${calculateVariation(data1, data2, empresa)}%
+                                </span>` : ''}
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="chart-${empresa.replace(/\s+/g, '-')}"></canvas>
+                            </div>
+                            <div class="chart-legend" id="legend-${empresa.replace(/\s+/g, '-')}"></div>
+                        `;
+                        companyCardsDiv.appendChild(card);
+                        
+                        renderCompanyChart(empresa, data1, data2);
+                    });
+                } catch (error) {
+                    console.error("Erro ao renderizar cards:", error);
+                }
+            }
+            
+            function renderCompanyChart(empresa, data1, data2 = null) {
+                try {
+                    const canvasId = `chart-${empresa.replace(/\s+/g, '-')}`;
+                    const ctx = document.getElementById(canvasId).getContext('2d');
+                    const legendDiv = document.getElementById(`legend-${empresa.replace(/\s+/g, '-')}`);
+                    
+                    // Todas as métricas financeiras
+                    const metrics = [
+                        { name: 'Receita Líquida', key: 'Receita Líquida' },
+                        { name: 'CMV', key: 'CMV' },
+                        { name: 'Despesas Financeiras', key: 'Despesas Financeiras' },
+                        { name: 'Custos Fiscais', key: 'Custos Fiscais' },
+                        { name: 'Receita Operacional', key: 'Receita Operacional' },
+                        { name: 'Ocupação', key: 'Ocupação' },
+                        { name: 'Pessoal', key: 'Pessoal' },
+                        { name: 'Administrativo', key: 'Administrativo' },
+                        { name: 'Marketing', key: 'Marketing' },
+                        { name: 'Resultado Liquido', key: 'Resultado Liquido' },
+                        { name: 'Não Operacional', key: 'Não Operacional' },
+                        { name: 'Resultado 2', key: 'Resultado 2' }
+                    ];
+                    
+                    // Filtrar métricas que existem para esta empresa
+                    const validMetrics = metrics.filter(metric => 
+                        data1.dados[metric.key] && 
+                        data1.dados[metric.key][empresa] !== undefined && 
+                        data1.dados[metric.key][empresa] !== ""
+                    );
+                    
+                    // Obter valores e calcular totais
+                    const values = validMetrics.map(metric => Math.abs(Number(data1.dados[metric.key][empresa])));
+                    const total = values.reduce((sum, value) => sum + value, 0);
+                    
+                    // Configurar cores para cada métrica
+                    const backgroundColors = [
+                        'rgba(67, 97, 238, 0.7)',    // Receita Líquida
+                        'rgba(239, 71, 111, 0.7)',   // CMV
+                        'rgba(255, 159, 64, 0.7)',   // Despesas Financeiras
+                        'rgba(6, 214, 160, 0.7)',    // Custos Fiscais
+                        'rgba(131, 56, 236, 0.7)',   // Receita Operacional
+                        'rgba(58, 134, 255, 0.7)',   // Ocupação
+                        'rgba(247, 37, 133, 0.7)',   // Pessoal
+                        'rgba(255, 206, 86, 0.7)',   // Administrativo
+                        'rgba(29, 209, 161, 0.7)',   // Marketing
+                        'rgba(72, 219, 251, 0.7)',   // Resultado Liquido
+                        'rgba(253, 167, 223, 0.7)',  // Não Operacional
+                        'rgba(199, 199, 199, 0.7)'   // Resultado 2
+                    ];
+                    
+                    // Destruir gráfico anterior se existir
+                    if (charts[empresa]) {
+                        charts[empresa].destroy();
                     }
                     
-                    document.querySelectorAll('.dashboard-grid').forEach(grid => {
-                        grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(380px, 1fr))';
+                    // Criar gráfico de pizza
+                    charts[empresa] = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: validMetrics.map(metric => metric.name),
+                            datasets: [{
+                                data: values,
+                                backgroundColor: backgroundColors.slice(0, validMetrics.length),
+                                borderColor: '#fff',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            layout: {
+                                padding: 20
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const value = context.raw;
+                                            const percentage = ((value / total) * 100).toFixed(1);
+                                            return `${context.label}: R$ ${value.toLocaleString('pt-BR')} (${percentage}%)`;
+                                        }
+                                    }
+                                },
+                                datalabels: {
+                                    formatter: (value) => ((value / total) * 100).toFixed(1) + '%',
+                                    color: '#333',
+                                    font: { weight: 'bold', size: 12 },
+                                    anchor: 'end',
+                                    align: 'end',
+                                    offset: 15,
+                                    clip: false
+                                }
+                            }
+                        },
+                        plugins: [ChartDataLabels]
                     });
+                    
+                    // Criar legenda
+                    legendDiv.innerHTML = '';
+                    validMetrics.forEach((metric, index) => {
+                        const value = data1.dados[metric.key][empresa];
+                        const percentage = ((Math.abs(Number(value)) / total) * 100).toFixed(1);
+                        
+                        const legendItem = document.createElement('div');
+                        legendItem.className = 'legend-item';
+                        legendItem.innerHTML = `
+                            <span class="legend-color" style="background-color: ${backgroundColors[index]}"></span>
+                            ${metric.name}: <span class="percentage-value">${percentage}%</span>
+                            (R$ ${Math.abs(Number(value)).toLocaleString('pt-BR')})
+                        `;
+                        legendDiv.appendChild(legendItem);
+                    });
+                } catch (error) {
+                    console.error(`Erro ao renderizar gráfico para ${empresa}:`, error);
                 }
-            });
-        }
-        
-        // Configurar abas das tabelas
-        function setupTableTabs() {
-            const tabBtns = document.querySelectorAll('.tab-btn');
-            const tabContents = document.querySelectorAll('.tab-content');
+            }
             
-            tabBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const tabId = this.getAttribute('data-tab');
+            function renderDetailedTable(month1, month2 = null) {
+                try {
+                    const data1 = workbookData[month1];
+                    const data2 = month2 ? workbookData[month2] : null;
+                    const tableBody = document.getElementById('detailedTableBody');
+                    tableBody.innerHTML = '';
                     
-                    // Remover active de todos
-                    tabBtns.forEach(btn => btn.classList.remove('active'));
-                    tabContents.forEach(content => content.classList.remove('active'));
+                    if (!data1) return;
                     
-                    // Adicionar active ao selecionado
-                    this.classList.add('active');
-                    document.getElementById(tabId).classList.add('active');
-                });
-            });
+                    // Todas as métricas financeiras
+                    const metrics = [
+                        { name: 'Receita Líquida', key: 'Receita Líquida' },
+                        { name: 'CMV', key: 'CMV' },
+                        { name: 'Despesas Financeiras', key: 'Despesas Financeiras' },
+                        { name: 'Custos Fiscais', key: 'Custos Fiscais' },
+                        { name: 'Receita Operacional', key: 'Receita Operacional' },
+                        { name: 'Ocupação', key: 'Ocupação' },
+                        { name: 'Pessoal', key: 'Pessoal' },
+                        { name: 'Administrativo', key: 'Administrativo' },
+                        { name: 'Marketing', key: 'Marketing' },
+                        { name: 'Resultado Liquido', key: 'Resultado Liquido' },
+                        { name: 'Não Operacional', key: 'Não Operacional' },
+                        { name: 'Resultado 2', key: 'Resultado 2' }
+                    ];
+                    
+                    data1.empresas.forEach(empresa => {
+                        metrics.forEach(metric => {
+                            const value1 = data1.dados[metric.key]?.[empresa] || 0;
+                            const value2 = data2?.dados[metric.key]?.[empresa] || 0;
+                            
+                            // Calcular variação
+                            let variation = 0;
+                            let variationPercent = 0;
+                            let variationClass = 'neutral';
+                            
+                            if (value2 !== 0 && value1 !== 0) {
+                                variation = value1 - value2;
+                                variationPercent = ((value1 - value2) / Math.abs(value2)) * 100;
+                                
+                                if (variation > 0) {
+                                    variationClass = 'up';
+                                } else if (variation < 0) {
+                                    variationClass = 'down';
+                                }
+                            }
+                            
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${empresa}</td>
+                                <td>${metric.name}</td>
+                                <td class="${value1 >= 0 ? 'positive' : 'negative'}">R$ ${Number(value1).toLocaleString('pt-BR')}</td>
+                                <td class="${value2 >= 0 ? 'positive' : 'negative'}">${month2 ? `R$ ${Number(value2).toLocaleString('pt-BR')}` : 'N/A'}</td>
+                                <td class="${variationClass}">${month2 ? `R$ ${Number(variation).toLocaleString('pt-BR')}` : 'N/A'}</td>
+                                <td>
+                                    ${month2 ? `
+                                        <span class="variation ${variationClass}">
+                                            ${variationClass === 'up' ? '<i class="fas fa-arrow-up"></i>' : variationClass === 'down' ? '<i class="fas fa-arrow-down"></i>' : ''}
+                                            ${Math.abs(variationPercent).toFixed(2)}%
+                                        </span>
+                                    ` : 'N/A'}
+                                </td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                    });
+                } catch (error) {
+                    console.error("Erro ao renderizar tabela detalhada:", error);
+                }
+            }
+            
+            function renderSummaryTable(month1, month2 = null) {
+                try {
+                    const data1 = workbookData[month1];
+                    const data2 = month2 ? workbookData[month2] : null;
+                    const tableBody = document.getElementById('summaryTableBody');
+                    tableBody.innerHTML = '';
+                    
+                    if (!data1) return;
+                    
+                    data1.empresas.forEach(empresa => {
+                        // Calcular valores para o mês base
+                        const receita1 = data1.dados['Receita Líquida']?.[empresa] || 0;
+                        const cmv1 = data1.dados['CMV']?.[empresa] || 0;
+                        const despesas1 = 
+                            (data1.dados['Despesas Financeiras']?.[empresa] || 0) +
+                            (data1.dados['Ocupação']?.[empresa] || 0) +
+                            (data1.dados['Pessoal']?.[empresa] || 0) +
+                            (data1.dados['Administrativo']?.[empresa] || 0) +
+                            (data1.dados['Marketing']?.[empresa] || 0);
+                        const resultado1 = data1.dados['Resultado Liquido']?.[empresa] || 0;
+                        const margem1 = receita1 ? ((resultado1 / receita1) * 100).toFixed(2) : 0;
+                        
+                        // Calcular valores para o mês de comparação (se existir)
+                        let resultado2 = 0;
+                        let variacaoResultado = 0;
+                        let variacaoPercentual = 0;
+                        let variacaoClass = 'neutral';
+                        
+                        if (data2) {
+                            resultado2 = data2.dados['Resultado Liquido']?.[empresa] || 0;
+                            variacaoResultado = resultado1 - resultado2;
+                            variacaoPercentual = resultado2 ? ((variacaoResultado / Math.abs(resultado2)) * 100) : 0;
+                            
+                            if (variacaoResultado > 0) {
+                                variacaoClass = 'up';
+                            } else if (variacaoResultado < 0) {
+                                variacaoClass = 'down';
+                            }
+                        }
+                        
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td><strong>${empresa}</strong></td>
+                            <td class="positive">R$ ${Number(receita1).toLocaleString('pt-BR')}</td>
+                            <td class="negative">R$ ${Number(cmv1).toLocaleString('pt-BR')}</td>
+                            <td class="negative">R$ ${Number(despesas1).toLocaleString('pt-BR')}</td>
+                            <td class="${resultado1 >= 0 ? 'positive' : 'negative'}">
+                                R$ ${Number(resultado1).toLocaleString('pt-BR')}
+                            </td>
+                            <td class="${margem1 >= 0 ? 'positive' : 'negative'}">
+                                ${margem1}%
+                            </td>
+                            <td>
+                                ${month2 ? `
+                                    <span class="variation ${variacaoClass}">
+                                        ${variacaoClass === 'up' ? '<i class="fas fa-arrow-up"></i>' : variacaoClass === 'down' ? '<i class="fas fa-arrow-down"></i>' : ''}
+                                        ${Math.abs(variacaoPercentual).toFixed(2)}%
+                                    </span>
+                                ` : 'N/A'}
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } catch (error) {
+                    console.error("Erro ao renderizar tabela de resumo:", error);
+                }
+            }
+            
+            // Funções auxiliares para cálculo de variação
+            function calculateVariation(data1, data2, empresa) {
+                if (!data2) return 0;
+                
+                const resultado1 = data1.dados['Resultado Liquido']?.[empresa] || 0;
+                const resultado2 = data2.dados['Resultado Liquido']?.[empresa] || 0;
+                
+                if (resultado2 === 0) return 0;
+                
+                return ((resultado1 - resultado2) / Math.abs(resultado2) * 100).toFixed(2);
+            }
+            
+            function getVariationClass(data1, data2, empresa) {
+                if (!data2) return 'neutral';
+                
+                const resultado1 = data1.dados['Resultado Liquido']?.[empresa] || 0;
+                const resultado2 = data2.dados['Resultado Liquido']?.[empresa] || 0;
+                
+                if (resultado1 > resultado2) return 'up';
+                if (resultado1 < resultado2) return 'down';
+                return 'neutral';
+            }
+            
+            function getVariationIcon(data1, data2, empresa) {
+                const variationClass = getVariationClass(data1, data2, empresa);
+                
+                if (variationClass === 'up') return '<i class="fas fa-arrow-up"></i>';
+                if (variationClass === 'down') return '<i class="fas fa-arrow-down"></i>';
+                return '<i class="fas fa-equals"></i>';
+            }
         }
+
+        // Inicia a verificação dos scripts carregados
+        checkScriptsLoaded();
     </script>
 </body>
 </html>
