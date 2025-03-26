@@ -1236,25 +1236,45 @@
                             layout: {
                                 padding: 20
                             },
-                            plugins: {
+                                                       plugins: {
                                 legend: { display: false },
                                 tooltip: {
                                     callbacks: {
                                         label: function(context) {
-                                            const percentage = context.raw.toFixed(1);
-                                            const absoluteValue = (receitaLiquida * context.raw / 100).toLocaleString('pt-BR');
-                                            return `${context.label}: ${percentage}% (R$ ${absoluteValue})`;
+                                            const value = context.raw;
+                                            const percentage = ((value / total) * 100).toFixed(2);
+                                            return `${context.label}: R$ ${value.toLocaleString('pt-BR')} (${percentage}%)`;
                                         }
                                     }
                                 },
                                 datalabels: {
-                                    formatter: (value) => value.toFixed(1) + '%',
+                                    formatter: (value) => ((value / total) * 100).toFixed(2) + '%',
                                     color: '#333',
-                                    font: { weight: 'bold', size: 12 },
+                                    font: { weight: 'bold', size: 15 },
                                     anchor: 'end',
                                     align: 'end',
                                     offset: 15,
-                                    clip: false
+                                    clip: false,
+                color: (context) => {
+                    // Usa a mesma cor da fatia para o texto do rótulo
+                    return context.dataset.backgroundColor[context.dataIndex];
+                },
+                labels: {
+                    value: {
+                        color: (context) => {
+                            // Cor do texto baseada na cor da fatia
+                            return context.dataset.backgroundColor[context.dataIndex];
+                        }
+                    }
+                },
+                        labelLine: {
+                            length: 30, // Comprimento da linha
+                            width: 2,   // Largura da linha
+                            color: (context) => {
+                                // Usa a mesma cor da fatia para a linha de conexão
+                                return context.dataset.backgroundColor[context.dataIndex];
+                            }
+                        }
                                 }
                             }
                         },
