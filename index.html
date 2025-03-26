@@ -1238,13 +1238,13 @@
                                     callbacks: {
                                         label: function(context) {
                                             const value = context.raw;
-                                            const percentage = ((value / total) * 100).toFixed(1);
+                                            const percentage = ((value / total) * 100).toFixed(2);
                                             return `${context.label}: R$ ${value.toLocaleString('pt-BR')} (${percentage}%)`;
                                         }
                                     }
                                 },
                                 datalabels: {
-                                    formatter: (value) => ((value / total) * 100).toFixed(1) + '%',
+                                    formatter: (value) => ((value / total) * 100).toFixed(2) + '%',
                                     color: '#333',
                                     font: { weight: 'bold', size: 15 },
                                     anchor: 'end',
