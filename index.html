@@ -1155,148 +1155,145 @@
                 }
             }
             
-            function renderCompanyChart(empresa, data1, data2 = null) {
-                try {
-                    const canvasId = `chart-${empresa.replace(/\s+/g, '-')}`;
-                    const ctx = document.getElementById(canvasId).getContext('2d');
-                    const legendDiv = document.getElementById(`legend-${empresa.replace(/\s+/g, '-')}`);
-                    
-                    // Todas as métricas financeiras
-                    const metrics = [
-                        { name: 'Receita Líquida', key: 'Receita Líquida' },
-                        { name: 'CMV', key: 'CMV' },
-                        { name: 'Despesas Financeiras', key: 'Despesas Financeiras' },
-                        { name: 'Custos Fiscais', key: 'Custos Fiscais' },
-                        { name: 'Receita Operacional', key: 'Receita Operacional' },
-                        { name: 'Ocupação', key: 'Ocupação' },
-                        { name: 'Pessoal', key: 'Pessoal' },
-                        { name: 'Administrativo', key: 'Administrativo' },
-                        { name: 'Marketing', key: 'Marketing' },
-                        { name: 'Resultado Liquido', key: 'Resultado Liquido' },
-                        { name: 'Não Operacional', key: 'Não Operacional' },
-                        { name: 'Resultado 2', key: 'Resultado 2' }
-                    ];
-                    
-                    // Filtrar métricas que existem para esta empresa
-                    const validMetrics = metrics.filter(metric => 
-                        data1.dados[metric.key] && 
-                        data1.dados[metric.key][empresa] !== undefined && 
-                        data1.dados[metric.key][empresa] !== ""
-                    );
-                    
-                    // Obter valores e calcular totais
-                    const values = validMetrics.map(metric => Math.abs(Number(data1.dados[metric.key][empresa])));
-                    const total = values.reduce((sum, value) => sum + value, 0);
-                    
-                    // Configurar cores para cada métrica
-                    const backgroundColors = [
-                        'rgba(67, 97, 238, 0.7)',    // Receita Líquida
-                        'rgba(239, 71, 111, 0.7)',   // CMV
-                        'rgba(255, 159, 64, 0.7)',   // Despesas Financeiras
-                        'rgba(6, 214, 160, 0.7)',    // Custos Fiscais
-                        'rgba(131, 56, 236, 0.7)',   // Receita Operacional
-                        'rgba(58, 134, 255, 0.7)',   // Ocupação
-                        'rgba(247, 37, 133, 0.7)',   // Pessoal
-                        'rgba(255, 206, 86, 0.7)',   // Administrativo
-                        'rgba(29, 209, 161, 0.7)',   // Marketing
-                        'rgba(72, 219, 251, 0.7)',   // Resultado Liquido
-                        'rgba(253, 167, 223, 0.7)',  // Não Operacional
-                        'rgba(199, 199, 199, 0.7)'   // Resultado 2
-                    ];
-                    
-                    // Destruir gráfico anterior se existir
-                    if (charts[empresa]) {
-                        charts[empresa].destroy();
-                    }
-                    
-                    // Criar gráfico de pizza
-                    charts[empresa] = new Chart(ctx, {
-                        type: 'pie',
-                        data: {
-                            labels: validMetrics.map(metric => metric.name),
-                            datasets: [{
-                                data: values,
-                                backgroundColor: backgroundColors.slice(0, validMetrics.length),
-                                borderColor: '#fff',
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            layout: {
-                                padding: {
-                                top: 40,    // Margem superior
-                                bottom: 40, // Margem inferior
-                                left: 10,   // Margem esquerda (opcional)
-                                right: 10   // Margem direita (opcional)
+    function renderCompanyChart(empresa, data1, data2 = null) {
+        try {
+            const canvasId = `chart-${empresa.replace(/\s+/g, '-')}`;
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            const legendDiv = document.getElementById(`legend-${empresa.replace(/\s+/g, '-')}`);
+            
+            // Todas as métricas financeiras
+            const metrics = [
+                { name: 'Receita Líquida', key: 'Receita Líquida' },
+                { name: 'CMV', key: 'CMV' },
+                { name: 'Despesas Financeiras', key: 'Despesas Financeiras' },
+                { name: 'Custos Fiscais', key: 'Custos Fiscais' },
+                { name: 'Receita Operacional', key: 'Receita Operacional' },
+                { name: 'Ocupação', key: 'Ocupação' },
+                { name: 'Pessoal', key: 'Pessoal' },
+                { name: 'Administrativo', key: 'Administrativo' },
+                { name: 'Marketing', key: 'Marketing' },
+                { name: 'Resultado Liquido', key: 'Resultado Liquido' },
+                { name: 'Não Operacional', key: 'Não Operacional' },
+                { name: 'Resultado 2', key: 'Resultado 2' }
+            ];
+            
+            // Obter a Receita Líquida como base (100%)
+            const receitaLiquida = Math.abs(Number(data1.dados['Receita Líquida']?.[empresa] || 1);
+            
+            // Filtrar métricas que existem para esta empresa (exceto Receita Líquida que será fixa como 100%)
+            const validMetrics = metrics.filter(metric => 
+                metric.key !== 'Receita Líquida' && 
+                data1.dados[metric.key] && 
+                data1.dados[metric.key][empresa] !== undefined && 
+                data1.dados[metric.key][empresa] !== ""
+            );
+            
+            // Calcular valores como porcentagem da Receita Líquida
+            const values = [
+                100, // Receita Líquida sempre 100%
+                ...validMetrics.map(metric => {
+                    const valor = Math.abs(Number(data1.dados[metric.key][empresa]));
+                    return (valor / receitaLiquida) * 100;
+                })
+            ];
+            
+            // Configurar cores para cada métrica
+            const backgroundColors = [
+                'rgba(67, 97, 238, 0.7)',    // Receita Líquida
+                'rgba(239, 71, 111, 0.7)',   // CMV
+                'rgba(255, 159, 64, 0.7)',   // Despesas Financeiras
+                'rgba(6, 214, 160, 0.7)',    // Custos Fiscais
+                'rgba(131, 56, 236, 0.7)',   // Receita Operacional
+                'rgba(58, 134, 255, 0.7)',   // Ocupação
+                'rgba(247, 37, 133, 0.7)',   // Pessoal
+                'rgba(255, 206, 86, 0.7)',   // Administrativo
+                'rgba(29, 209, 161, 0.7)',   // Marketing
+                'rgba(72, 219, 251, 0.7)',   // Resultado Liquido
+                'rgba(253, 167, 223, 0.7)',  // Não Operacional
+                'rgba(199, 199, 199, 0.7)'   // Resultado 2
+            ];
+            
+            // Labels incluindo a Receita Líquida
+            const labels = ['Receita Líquida', ...validMetrics.map(metric => metric.name)];
+            
+            // Destruir gráfico anterior se existir
+            if (charts[empresa]) {
+                charts[empresa].destroy();
             }
-                            },
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            const value = context.raw;
-                                            const percentage = ((value / total) * 100).toFixed(2);
-                                            return `${context.label}: R$ ${value.toLocaleString('pt-BR')} (${percentage}%)`;
-                                        }
-                                    }
-                                },
-                                datalabels: {
-                                    formatter: (value) => ((value / total) * 100).toFixed(2) + '%',
-                                    color: '#333',
-                                    font: { weight: 'bold', size: 15 },
-                                    anchor: 'end',
-                                    align: 'end',
-                                    offset: 15,
-                                    clip: false,
-                color: (context) => {
-                    // Usa a mesma cor da fatia para o texto do rótulo
-                    return context.dataset.backgroundColor[context.dataIndex];
+            
+            // Criar gráfico de pizza
+            charts[empresa] = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: backgroundColors.slice(0, labels.length),
+                        borderColor: '#fff',
+                        borderWidth: 1
+                    }]
                 },
-                labels: {
-                    value: {
-                        color: (context) => {
-                            // Cor do texto baseada na cor da fatia
-                            return context.dataset.backgroundColor[context.dataIndex];
-                        }
-                    }
-                },
-                        labelLine: {
-                            length: 30, // Comprimento da linha
-                            width: 2,   // Largura da linha
-                            color: (context) => {
-                                // Usa a mesma cor da fatia para a linha de conexão
-                                return context.dataset.backgroundColor[context.dataIndex];
-                            }
-                        }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: 20
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw.toFixed(1)}%`;
                                 }
                             }
                         },
-                        plugins: [ChartDataLabels]
-                    });
-                    
-                    // Criar legenda
-                    legendDiv.innerHTML = '';
-                    validMetrics.forEach((metric, index) => {
-                        const value = data1.dados[metric.key][empresa];
-                        const percentage = ((Math.abs(Number(value)) / total) * 100).toFixed(2);
-                        
-                        const legendItem = document.createElement('div');
-                        legendItem.className = 'legend-item';
-                        legendItem.innerHTML = `
-                            <span class="legend-color" style="background-color: ${backgroundColors[index]}"></span>
-                            ${metric.name}: <span class="percentage-value">${percentage}%</span>
-                            (R$ ${Math.abs(Number(value)).toLocaleString('pt-BR')})
-                        `;
-                        legendDiv.appendChild(legendItem);
-                    });
-                } catch (error) {
-                    console.error(`Erro ao renderizar gráfico para ${empresa}:`, error);
-                }
-            }
+                        datalabels: {
+                            formatter: (value) => value.toFixed(1) + '%',
+                            color: '#333',
+                            font: { weight: 'bold', size: 12 },
+                            anchor: 'end',
+                            align: 'end',
+                            offset: 15,
+                            clip: false
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels]
+            });
             
+            // Criar legenda
+            legendDiv.innerHTML = '';
+            
+            // Adicionar Receita Líquida primeiro
+            const receitaItem = document.createElement('div');
+            receitaItem.className = 'legend-item';
+            receitaItem.innerHTML = `
+                <span class="legend-color" style="background-color: ${backgroundColors[0]}"></span>
+                Receita Líquida: <span class="percentage-value">100%</span>
+                (R$ ${receitaLiquida.toLocaleString('pt-BR')})
+            `;
+            legendDiv.appendChild(receitaItem);
+            
+            // Adicionar outras métricas
+            validMetrics.forEach((metric, index) => {
+                const value = data1.dados[metric.key][empresa];
+                const percentage = ((Math.abs(Number(value)) / receitaLiquida) * 100).toFixed(1);
+                
+                const legendItem = document.createElement('div');
+                legendItem.className = 'legend-item';
+                legendItem.innerHTML = `
+                    <span class="legend-color" style="background-color: ${backgroundColors[index + 1]}"></span>
+                    ${metric.name}: <span class="percentage-value">${percentage}%</span>
+                    (R$ ${Math.abs(Number(value)).toLocaleString('pt-BR')})
+                `;
+                legendDiv.appendChild(legendItem);
+            });
+        } catch (error) {
+            console.error(`Erro ao renderizar gráfico para ${empresa}:`, error);
+        }
+    }
+
             function renderDetailedTable(month1, month2 = null) {
                 try {
                     const data1 = workbookData[month1];
