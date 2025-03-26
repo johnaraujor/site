@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Financeiro Avançado</title>
+    <title>Dashboard Financeiro Avançado | Análise Comparativa</title>
+    <meta name="description" content="Dashboard interativo para análise comparativa de desempenho financeiro entre períodos">
+    <!-- Adicione favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -12,17 +15,26 @@
     <style>
         :root {
             --primary: #4361ee;
+            --primary-light: #6a7fef;
+            --primary-dark: #2a4bcc;
             --secondary: #3f37c9;
             --accent: #f72585;
             --light: #f8f9fa;
             --dark: #212529;
+            --dark-light: #343a40;
             --success: #4cc9f0;
+            --success-dark: #2bb7e5;
             --warning: #f8961e;
             --danger: #ef233c;
+            --danger-dark: #d90429;
             --gray: #6c757d;
+            --gray-light: #e9ecef;
             --white: #ffffff;
             --card-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --card-shadow-hover: 0 8px 30px rgba(0,0,0,0.12);
             --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --border-radius: 12px;
+            --border-radius-sm: 8px;
         }
         
         * {
@@ -36,6 +48,7 @@
             background-color: #f5f7ff;
             color: var(--dark);
             line-height: 1.6;
+            min-height: 100vh;
         }
         
         .container {
@@ -47,6 +60,7 @@
         header {
             text-align: center;
             margin-bottom: 2.5rem;
+            position: relative;
         }
         
         h1 {
@@ -54,26 +68,38 @@
             font-weight: 700;
             color: var(--secondary);
             margin-bottom: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
         }
         
         .subtitle {
             color: var(--gray);
             font-size: 1.1rem;
             margin-bottom: 1.5rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
         }
         
         .upload-section {
             background: var(--white);
-            padding: 2rem;
-            border-radius: 12px;
+            padding: 2.5rem;
+            border-radius: var(--border-radius);
             box-shadow: var(--card-shadow);
             margin-bottom: 2rem;
             text-align: center;
             transition: var(--transition);
+            border: 2px dashed var(--gray-light);
+        }
+        
+        .upload-section.drag-over {
+            border-color: var(--primary);
+            background-color: rgba(67, 97, 238, 0.05);
         }
         
         .upload-section:hover {
-            box-shadow: 0 6px 30px rgba(0,0,0,0.12);
+            box-shadow: var(--card-shadow-hover);
         }
         
         .dashboard {
@@ -92,25 +118,41 @@
             align-items: center;
             margin-bottom: 2rem;
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: 1.5rem;
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
         }
         
         .month-comparison {
             display: flex;
-            gap: 1rem;
+            gap: 1.5rem;
             align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .comparison-label {
+            font-weight: 500;
+            color: var(--dark-light);
+            white-space: nowrap;
         }
         
         select {
             padding: 0.8rem 1.2rem;
-            border-radius: 8px;
-            border: 1px solid #dee2e6;
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--gray-light);
             background-color: var(--white);
             font-family: inherit;
             font-size: 1rem;
             transition: var(--transition);
             min-width: 200px;
             cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
         }
         
         select:focus {
@@ -123,8 +165,8 @@
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 8px;
+            padding: 0.8rem 1.8rem;
+            border-radius: var(--border-radius-sm);
             font-family: inherit;
             font-size: 1rem;
             font-weight: 500;
@@ -133,15 +175,34 @@
             align-items: center;
             gap: 0.5rem;
             transition: var(--transition);
+            white-space: nowrap;
         }
         
         button:hover {
-            background-color: var(--secondary);
+            background-color: var(--primary-dark);
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
         }
         
         button:active {
             transform: translateY(0);
+        }
+        
+        button.secondary {
+            background-color: var(--gray-light);
+            color: var(--dark);
+        }
+        
+        button.secondary:hover {
+            background-color: #d1d7e0;
+        }
+        
+        button.danger {
+            background-color: var(--danger);
+        }
+        
+        button.danger:hover {
+            background-color: var(--danger-dark);
         }
         
         .company-cards {
@@ -153,15 +214,17 @@
         
         .card {
             background: var(--white);
-            border-radius: 12px;
+            border-radius: var(--border-radius);
             box-shadow: var(--card-shadow);
             padding: 1.5rem;
             transition: var(--transition);
+            position: relative;
+            overflow: hidden;
         }
         
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: var(--card-shadow-hover);
         }
         
         .card-header {
@@ -170,7 +233,7 @@
             align-items: center;
             margin-bottom: 1.5rem;
             padding-bottom: 1rem;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--gray-light);
         }
         
         .card-title {
@@ -197,6 +260,7 @@
             flex-wrap: wrap;
             gap: 0.8rem;
             justify-content: center;
+            margin-top: 1rem;
         }
         
         .legend-item {
@@ -207,6 +271,7 @@
             padding: 0.5rem 0.8rem;
             border-radius: 20px;
             transition: var(--transition);
+            cursor: default;
         }
         
         .legend-item:hover {
@@ -218,6 +283,7 @@
             height: 12px;
             border-radius: 3px;
             margin-right: 0.5rem;
+            flex-shrink: 0;
         }
         
         .percentage-value {
@@ -230,33 +296,48 @@
             margin-top: 2rem;
         }
         
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
         .section-title {
             font-size: 1.5rem;
             font-weight: 600;
             color: var(--secondary);
-            margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
             gap: 0.8rem;
+            margin: 0;
         }
         
         .section-title i {
             color: var(--primary);
         }
         
+        .section-actions {
+            display: flex;
+            gap: 0.8rem;
+        }
+        
         .table-container {
             overflow-x: auto;
             background: var(--white);
-            border-radius: 12px;
+            border-radius: var(--border-radius);
             box-shadow: var(--card-shadow);
-            padding: 1.5rem;
             margin-bottom: 2rem;
+            position: relative;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.95rem;
+            min-width: 800px;
         }
         
         th {
@@ -269,9 +350,21 @@
             top: 0;
         }
         
+        th:first-child {
+            border-top-left-radius: var(--border-radius-sm);
+        }
+        
+        th:last-child {
+            border-top-right-radius: var(--border-radius-sm);
+        }
+        
         td {
             padding: 1rem;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
         }
         
         tr:nth-child(even) {
@@ -283,12 +376,12 @@
         }
         
         .positive {
-            color: var(--success);
+            color: var(--success-dark);
             font-weight: 500;
         }
         
         .negative {
-            color: var(--danger);
+            color: var(--danger-dark);
             font-weight: 500;
         }
         
@@ -301,24 +394,157 @@
             align-items: center;
             gap: 0.3rem;
             font-weight: 500;
+            white-space: nowrap;
         }
         
         .variation.up {
-            color: var(--success);
+            color: var(--success-dark);
         }
         
         .variation.down {
-            color: var(--danger);
+            color: var(--danger-dark);
         }
         
         .variation i {
             font-size: 0.8rem;
         }
         
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.35em 0.65em;
+            font-size: 0.75em;
+            font-weight: 600;
+            line-height: 1;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.375rem;
+        }
+        
+        .badge-primary {
+            background-color: var(--primary);
+        }
+        
+        .badge-success {
+            background-color: var(--success);
+        }
+        
+        .badge-warning {
+            background-color: var(--warning);
+        }
+        
+        .badge-danger {
+            background-color: var(--danger);
+        }
+        
+        /* Alertas */
+        .alert {
+            position: relative;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid transparent;
+            border-radius: var(--border-radius-sm);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .alert-success {
+            color: #0f5132;
+            background-color: #d1e7dd;
+            border-color: #badbcc;
+        }
+        
+        .alert-danger {
+            color: #842029;
+            background-color: #f8d7da;
+            border-color: #f5c2c7;
+        }
+        
+        .alert-warning {
+            color: #664d03;
+            background-color: #fff3cd;
+            border-color: #ffecb5;
+        }
+        
+        /* Progress bar */
+        .progress {
+            height: 0.5rem;
+            background-color: var(--gray-light);
+            border-radius: 0.25rem;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            transition: width 0.6s ease;
+        }
+        
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+        
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--dark);
+            color: var(--white);
+            text-align: center;
+            border-radius: var(--border-radius-sm);
+            padding: 0.5rem;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85rem;
+            font-weight: normal;
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Loader */
+        .loader {
+            display: none;
+            border: 4px solid var(--gray-light);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         /* Responsividade */
         @media (max-width: 768px) {
             .container {
                 padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .upload-section {
+                padding: 1.5rem;
             }
             
             .company-cards {
@@ -333,10 +559,21 @@
             .month-comparison {
                 flex-direction: column;
                 align-items: stretch;
+                gap: 1rem;
             }
             
             select, button {
                 width: 100%;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .section-actions {
+                width: 100%;
+                justify-content: flex-end;
             }
         }
         
@@ -350,39 +587,184 @@
         .pulse {
             animation: pulse 2s infinite;
         }
+        
+        /* Toggle switch */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--gray-light);
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal-content {
+            background-color: var(--white);
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+            width: 80%;
+            max-width: 700px;
+            position: relative;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--gray);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .close-modal:hover {
+            color: var(--danger);
+        }
+        
+        /* Export buttons */
+        .export-buttons {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-chart-line"></i> Dashboard Financeiro Avançado</h1>
-            <p class="subtitle">Análise completa de desempenho financeiro com variação mensal</p>
+            <h1><i class="fas fa-chart-pie"></i> Dashboard Financeiro Avançado</h1>
+            <p class="subtitle">Análise comparativa de desempenho financeiro com visualização interativa e relatórios detalhados</p>
         </header>
         
-        <div class="upload-section">
+        <div class="upload-section" id="uploadSection">
             <h2>Carregar Dados Financeiros</h2>
+            <p class="subtitle" style="margin: 1rem auto 1.5rem;">Selecione um arquivo Excel contendo os dados financeiros para análise</p>
+            
             <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;">
-            <button id="loadButton"><i class="fas fa-file-upload"></i> Selecionar Arquivo Excel</button>
-            <div id="fileName" style="margin-top: 1rem; font-size: 0.9rem; color: var(--gray);"></div>
+            <button id="loadButton" class="pulse"><i class="fas fa-file-excel"></i> Selecionar Arquivo</button>
+            <p>ou arraste e solte o arquivo aqui</p>
+            
+            <div id="fileName" style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--gray);"></div>
+            <div id="fileError" class="alert alert-danger" style="display: none; margin-top: 1rem;"></div>
+            
+            <div class="loader" id="fileLoader"></div>
+            
+            <div style="margin-top: 2rem; font-size: 0.85rem; color: var(--gray);">
+                <p><i class="fas fa-info-circle"></i> O arquivo deve conter abas com os meses/trimestres e colunas com as empresas</p>
+            </div>
         </div>
         
         <div id="dashboard" class="dashboard">
             <div class="controls">
                 <div class="month-comparison">
+                    <div class="comparison-label">
+                        <i class="fas fa-calendar-alt"></i> Comparação:
+                    </div>
                     <select id="month1Select">
-                        <option value="">Mês Base</option>
+                        <option value="">Selecione o mês base</option>
                     </select>
+                    <span>vs</span>
                     <select id="month2Select">
-                        <option value="">Comparar com</option>
+                        <option value="">Selecione o mês de comparação</option>
                     </select>
                 </div>
-                <button id="compareBtn"><i class="fas fa-exchange-alt"></i> Comparar Meses</button>
+                
+                <div class="toggle-container">
+                    <span>Modo detalhado</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="detailedModeToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <button id="compareBtn"><i class="fas fa-exchange-alt"></i> Comparar</button>
+            </div>
+            
+            <div class="alert alert-success" id="comparisonAlert" style="display: none;">
+                <i class="fas fa-check-circle"></i>
+                <span id="comparisonAlertText"></span>
+            </div>
+            
+            <div class="export-buttons">
+                <button id="exportPdfBtn" class="secondary"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+                <button id="exportExcelBtn" class="secondary"><i class="fas fa-file-excel"></i> Exportar Excel</button>
+                <button id="resetDashboardBtn" class="danger"><i class="fas fa-redo"></i> Reiniciar</button>
             </div>
             
             <div class="company-cards" id="companyCards"></div>
             
-            <div class="data-section">
-                <h2 class="section-title"><i class="fas fa-table"></i> Dados Tabulares Detalhados</h2>
+            <div class="data-section" id="detailedDataSection">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-table"></i> Análise Detalhada</h2>
+                    <div class="section-actions">
+                        <button id="toggleMetricsBtn" class="secondary"><i class="fas fa-eye"></i> Mostrar/Ocultar Métricas</button>
+                    </div>
+                </div>
                 <div class="table-container">
                     <table id="detailedTable">
                         <thead>
@@ -391,8 +773,8 @@
                                 <th>Métrica</th>
                                 <th id="month1Header">Mês Base</th>
                                 <th id="month2Header">Mês Comparação</th>
-                                <th>Variação</th>
-                                <th>% Variação</th>
+                                <th>Variação (R$)</th>
+                                <th>Variação (%)</th>
                             </tr>
                         </thead>
                         <tbody id="detailedTableBody"></tbody>
@@ -401,7 +783,12 @@
             </div>
             
             <div class="data-section">
-                <h2 class="section-title"><i class="fas fa-chart-bar"></i> Resumo Financeiro</h2>
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-chart-bar"></i> Resumo Financeiro</h2>
+                    <div class="section-actions">
+                        <button id="showHelpBtn" class="secondary"><i class="fas fa-question-circle"></i> Ajuda</button>
+                    </div>
+                </div>
                 <div class="table-container">
                     <table id="summaryTable">
                         <thead>
@@ -418,6 +805,39 @@
                         <tbody id="summaryTableBody"></tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Ajuda -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2><i class="fas fa-question-circle"></i> Ajuda do Dashboard</h2>
+            
+            <div style="margin-top: 1.5rem;">
+                <h3 style="margin-bottom: 0.8rem; color: var(--primary);">Como usar:</h3>
+                <ol style="margin-left: 1.5rem; line-height: 2;">
+                    <li>Carregue um arquivo Excel com os dados financeiros</li>
+                    <li>Selecione o mês base para análise</li>
+                    <li>Opcionalmente, selecione um mês para comparação</li>
+                    <li>Clique em "Comparar" para gerar os gráficos e tabelas</li>
+                </ol>
+                
+                <h3 style="margin: 1.5rem 0 0.8rem; color: var(--primary);">Legenda:</h3>
+                <ul style="margin-left: 1.5rem; line-height: 2;">
+                    <li><span class="positive">Valores positivos</span> são mostrados em verde</li>
+                    <li><span class="negative">Valores negativos</span> são mostrados em vermelho</li>
+                    <li><i class="fas fa-arrow-up positive"></i> Indica aumento em relação ao período anterior</li>
+                    <li><i class="fas fa-arrow-down negative"></i> Indica redução em relação ao período anterior</li>
+                </ul>
+                
+                <h3 style="margin: 1.5rem 0 0.8rem; color: var(--primary);">Dicas:</h3>
+                <ul style="margin-left: 1.5rem; line-height: 2;">
+                    <li>Passe o mouse sobre os gráficos para ver detalhes</li>
+                    <li>Use os botões de exportação para salvar os resultados</li>
+                    <li>Clique em "Mostrar/Ocultar Métricas" para simplificar a visualização</li>
+                </ul>
             </div>
         </div>
     </div>
@@ -440,37 +860,165 @@
             let workbookData = null;
             let charts = {};
             let currentMonths = { month1: null, month2: null };
+            let hiddenMetrics = false;
             
             // Configura eventos de UI
-            document.getElementById('loadButton').addEventListener('click', function() {
-                document.getElementById('fileInput').click();
+            const uploadSection = document.getElementById('uploadSection');
+            const fileInput = document.getElementById('fileInput');
+            const loadButton = document.getElementById('loadButton');
+            const fileName = document.getElementById('fileName');
+            const fileError = document.getElementById('fileError');
+            const fileLoader = document.getElementById('fileLoader');
+            const dashboard = document.getElementById('dashboard');
+            const compareBtn = document.getElementById('compareBtn');
+            const detailedModeToggle = document.getElementById('detailedModeToggle');
+            const toggleMetricsBtn = document.getElementById('toggleMetricsBtn');
+            const showHelpBtn = document.getElementById('showHelpBtn');
+            const helpModal = document.getElementById('helpModal');
+            const closeModal = document.querySelector('.close-modal');
+            const exportPdfBtn = document.getElementById('exportPdfBtn');
+            const exportExcelBtn = document.getElementById('exportExcelBtn');
+            const resetDashboardBtn = document.getElementById('resetDashboardBtn');
+            const comparisonAlert = document.getElementById('comparisonAlert');
+            const comparisonAlertText = document.getElementById('comparisonAlertText');
+            
+            // Configurar drag and drop
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadSection.addEventListener(eventName, preventDefaults, false);
             });
             
-            document.getElementById('fileInput').addEventListener('change', function(e) {
-                const fileName = e.target.files[0]?.name || 'Nenhum arquivo selecionado';
-                document.getElementById('fileName').textContent = `Arquivo selecionado: ${fileName}`;
-                document.getElementById('fileName').className = 'pulse';
-                setTimeout(() => {
-                    document.getElementById('fileName').className = '';
-                }, 2000);
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadSection.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadSection.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                uploadSection.classList.add('drag-over');
+            }
+            
+            function unhighlight() {
+                uploadSection.classList.remove('drag-over');
+            }
+            
+            uploadSection.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
                 
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.name.match(/\.(xlsx|xls)$/i)) {
+                        handleFile(file);
+                    } else {
+                        showError('Por favor, selecione um arquivo Excel (.xlsx ou .xls)');
+                    }
+                }
+            }
+            
+            loadButton.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            fileInput.addEventListener('change', function(e) {
                 if (e.target.files.length > 0) {
-                    loadExcelFile(e.target.files[0]);
+                    handleFile(e.target.files[0]);
                 }
             });
             
-            document.getElementById('compareBtn').addEventListener('click', function() {
+            function handleFile(file) {
+                fileName.textContent = `Arquivo selecionado: ${file.name}`;
+                fileName.className = 'pulse';
+                fileError.style.display = 'none';
+                fileLoader.style.display = 'block';
+                
+                setTimeout(() => {
+                    fileName.className = '';
+                }, 2000);
+                
+                loadExcelFile(file);
+            }
+            
+            compareBtn.addEventListener('click', function() {
                 const month1 = document.getElementById('month1Select').value;
                 const month2 = document.getElementById('month2Select').value;
                 
                 if (!month1) {
-                    alert('Selecione um mês base para comparação');
+                    showError('Selecione um mês base para comparação');
                     return;
                 }
                 
                 currentMonths = { month1, month2 };
+                
+                // Mostrar alerta de comparação
+                comparisonAlertText.textContent = month2 
+                    ? `Comparando ${month1} com ${month2}`
+                    : `Analisando dados de ${month1}`;
+                comparisonAlert.style.display = 'flex';
+                
+                // Esconder o alerta após 5 segundos
+                setTimeout(() => {
+                    comparisonAlert.style.display = 'none';
+                }, 5000);
+                
                 updateDashboard();
             });
+            
+            detailedModeToggle.addEventListener('change', function() {
+                const detailedSection = document.getElementById('detailedDataSection');
+                if (this.checked) {
+                    detailedSection.style.display = 'block';
+                } else {
+                    detailedSection.style.display = 'none';
+                }
+            });
+            
+            toggleMetricsBtn.addEventListener('click', function() {
+                hiddenMetrics = !hiddenMetrics;
+                updateDashboard();
+            });
+            
+            showHelpBtn.addEventListener('click', function() {
+                helpModal.style.display = 'block';
+            });
+            
+            closeModal.addEventListener('click', function() {
+                helpModal.style.display = 'none';
+            });
+            
+            window.addEventListener('click', function(event) {
+                if (event.target === helpModal) {
+                    helpModal.style.display = 'none';
+                }
+            });
+            
+            exportPdfBtn.addEventListener('click', function() {
+                alert('Funcionalidade de exportar PDF será implementada em breve!');
+            });
+            
+            exportExcelBtn.addEventListener('click', function() {
+                alert('Funcionalidade de exportar Excel será implementada em breve!');
+            });
+            
+            resetDashboardBtn.addEventListener('click', function() {
+                if (confirm('Tem certeza que deseja reiniciar o dashboard? Todos os dados serão perdidos.')) {
+                    location.reload();
+                }
+            });
+            
+            function showError(message) {
+                fileError.textContent = message;
+                fileError.style.display = 'flex';
+                fileLoader.style.display = 'none';
+            }
             
             function loadExcelFile(file) {
                 const reader = new FileReader();
@@ -480,14 +1028,16 @@
                         const data = new Uint8Array(e.target.result);
                         const workbook = XLSX.read(data, { type: 'array' });
                         processWorkbook(workbook);
+                        fileLoader.style.display = 'none';
                     } catch (error) {
                         console.error("Erro ao processar arquivo:", error);
-                        alert("Erro ao processar o arquivo. Verifique se o formato está correto.");
+                        showError("Erro ao processar o arquivo. Verifique se o formato está correto.");
                     }
                 };
                 
                 reader.onerror = function() {
-                    alert("Erro ao ler o arquivo.");
+                    showError("Erro ao ler o arquivo.");
+                    fileLoader.style.display = 'none';
                 };
                 
                 reader.readAsArrayBuffer(file);
@@ -527,14 +1077,19 @@
                     });
                     
                     // Mostrar dashboard
-                    document.getElementById('dashboard').style.display = 'block';
+                    dashboard.style.display = 'block';
+                    
+                    // Rolar suavemente para o dashboard
+                    setTimeout(() => {
+                        dashboard.scrollIntoView({ behavior: 'smooth' });
+                    }, 300);
                     
                     // Preencher seletores de mês
                     const month1Select = document.getElementById('month1Select');
                     const month2Select = document.getElementById('month2Select');
                     
-                    month1Select.innerHTML = '<option value="">Mês Base</option>';
-                    month2Select.innerHTML = '<option value="">Comparar com</option>';
+                    month1Select.innerHTML = '<option value="">Selecione o mês base</option>';
+                    month2Select.innerHTML = '<option value="">Selecione o mês de comparação</option>';
                     
                     Object.keys(workbookData).forEach(month => {
                         month1Select.innerHTML += `<option value="${month}">${month}</option>`;
@@ -542,7 +1097,7 @@
                     });
                 } catch (error) {
                     console.error("Erro ao processar workbook:", error);
-                    alert("Erro ao processar os dados. Verifique o console para mais detalhes.");
+                    showError("Erro ao processar os dados. Verifique o console para mais detalhes.");
                 }
             }
             
@@ -557,7 +1112,9 @@
                 
                 // Renderizar gráficos e tabelas
                 renderCompanyCards(month1, month2);
-                renderDetailedTable(month1, month2);
+                if (!hiddenMetrics) {
+                    renderDetailedTable(month1, month2);
+                }
                 renderSummaryTable(month1, month2);
             }
             
@@ -573,13 +1130,22 @@
                     data1.empresas.forEach(empresa => {
                         const card = document.createElement('div');
                         card.className = 'card';
+                        
+                        // Calcular variação do resultado
+                        const resultado1 = data1.dados['Resultado Liquido']?.[empresa] || 0;
+                        const resultado2 = data2?.dados['Resultado Liquido']?.[empresa] || 0;
+                        const variacao = resultado2 ? ((resultado1 - resultado2) / Math.abs(resultado2) * 100) : 0;
+                        const variacaoClass = getVariationClass(resultado1, resultado2);
+                        
                         card.innerHTML = `
                             <div class="card-header">
                                 <h3 class="card-title"><i class="fas fa-building"></i> ${empresa}</h3>
-                                ${month2 ? `<span class="variation ${getVariationClass(data1, data2, empresa)}">
-                                    ${getVariationIcon(data1, data2, empresa)}
-                                    ${calculateVariation(data1, data2, empresa)}%
-                                </span>` : ''}
+                                ${month2 ? `
+                                    <span class="variation ${variacaoClass}">
+                                        ${variacaoClass === 'up' ? '<i class="fas fa-arrow-up"></i>' : variacaoClass === 'down' ? '<i class="fas fa-arrow-down"></i>' : '<i class="fas fa-equals"></i>'}
+                                        ${Math.abs(variacao).toFixed(2)}%
+                                    </span>
+                                ` : ''}
                             </div>
                             <div class="chart-container">
                                 <canvas id="chart-${empresa.replace(/\s+/g, '-')}"></canvas>
@@ -851,34 +1417,11 @@
             }
             
             // Funções auxiliares para cálculo de variação
-            function calculateVariation(data1, data2, empresa) {
-                if (!data2) return 0;
-                
-                const resultado1 = data1.dados['Resultado Liquido']?.[empresa] || 0;
-                const resultado2 = data2.dados['Resultado Liquido']?.[empresa] || 0;
-                
-                if (resultado2 === 0) return 0;
-                
-                return ((resultado1 - resultado2) / Math.abs(resultado2) * 100).toFixed(2);
-            }
-            
-            function getVariationClass(data1, data2, empresa) {
-                if (!data2) return 'neutral';
-                
-                const resultado1 = data1.dados['Resultado Liquido']?.[empresa] || 0;
-                const resultado2 = data2.dados['Resultado Liquido']?.[empresa] || 0;
-                
-                if (resultado1 > resultado2) return 'up';
-                if (resultado1 < resultado2) return 'down';
+            function getVariationClass(value1, value2) {
+                if (value2 === undefined || value2 === null || value2 === 0) return 'neutral';
+                if (value1 > value2) return 'up';
+                if (value1 < value2) return 'down';
                 return 'neutral';
-            }
-            
-            function getVariationIcon(data1, data2, empresa) {
-                const variationClass = getVariationClass(data1, data2, empresa);
-                
-                if (variationClass === 'up') return '<i class="fas fa-arrow-up"></i>';
-                if (variationClass === 'down') return '<i class="fas fa-arrow-down"></i>';
-                return '<i class="fas fa-equals"></i>';
             }
         }
 
