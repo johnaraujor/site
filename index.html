@@ -1240,7 +1240,12 @@
                             responsive: true,
                             maintainAspectRatio: false,
                             layout: {
-                                padding: 20
+                                padding: {
+                                top: 40,    // Margem superior
+                                bottom: 40, // Margem inferior
+                                left: 10,   // Margem esquerda (opcional)
+                                right: 10   // Margem direita (opcional)
+            }
                             },
                             plugins: {
                                 legend: { display: false },
@@ -1261,6 +1266,7 @@
                                     align: 'end',
                                     offset: 15,
                                     clip: false
+                                    
                                 }
                             }
                         },
