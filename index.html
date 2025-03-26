@@ -1281,7 +1281,7 @@
                     legendDiv.innerHTML = '';
                     validMetrics.forEach((metric, index) => {
                         const value = data1.dados[metric.key][empresa];
-                        const percentage = ((Math.abs(Number(value)) / total) * 100).toFixed(1);
+                        const percentage = ((Math.abs(Number(value)) / total) * 100).toFixed(2);
                         
                         const legendItem = document.createElement('div');
                         legendItem.className = 'legend-item';
