@@ -751,8 +751,6 @@
             </div>
             
             <div class="export-buttons">
-                <button id="exportPdfBtn" class="secondary"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
-                <button id="exportExcelBtn" class="secondary"><i class="fas fa-file-excel"></i> Exportar Excel</button>
                 <button id="resetDashboardBtn" class="danger"><i class="fas fa-redo"></i> Reiniciar</button>
             </div>
             
@@ -1231,7 +1229,12 @@
                             responsive: true,
                             maintainAspectRatio: false,
                             layout: {
-                                padding: 20
+                                padding: {
+                                top: 30,    // Margem superior
+                                bottom: 30, // Margem inferior
+                                left: 10,   // Margem esquerda (opcional)
+                                right: 10   // Margem direita (opcional)
+            }
                             },
                             plugins: {
                                 legend: { display: false },
