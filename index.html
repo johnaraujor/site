@@ -815,7 +815,7 @@
           <div class="toggle-container">
             <span>Modo detalhado</span>
             <label class="toggle-switch">
-              <input type="checkbox" id="detailedModeToggle" checked />
+              <input type="checkbox" id="detailedModeToggle" />
               <span class="slider"></span>
             </label>
           </div>
@@ -889,6 +889,23 @@
                 </tr>
               </thead>
               <tbody id="summaryTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="data-section">
+          <div class="section-header">
+            <h2 class="section-title">
+              <i class="fas fa-chart-line"></i> Evolução Financeira
+            </h2>
+          </div>
+          <div class="table-container">
+            <table id="table2">
+              <thead id="table2Head">
+                <!-- Cabeçalho gerado via JS -->
+              </thead>
+              <tbody id="table2Body">
+                <!-- Corpo gerado via JS -->
+              </tbody>
             </table>
           </div>
         </div>
@@ -971,6 +988,7 @@
       function initDashboard() {
         // Registrar o plugin globalmente
         Chart.register(ChartDataLabels);
+        document.getElementById("detailedDataSection").style.display = "none";
 
         let workbookData = null;
         let charts = {};
@@ -1171,6 +1189,12 @@
           reader.readAsArrayBuffer(file);
         }
 
+        function resultsTable() {
+          const table = document.createElement("table");
+          table.className = "results-table";
+          return table;
+        }
+
         function processWorkbook(workbook) {
           try {
             workbookData = {};
@@ -1254,6 +1278,7 @@
             renderDetailedTable(month1, month2);
           }
           renderSummaryTable(month1, month2);
+          renderTable2(month1);
         }
 
         function renderCompanyCards(month1, month2 = null) {
@@ -1396,6 +1421,7 @@
             // Criar gráfico de pizza
             charts[empresa] = new Chart(ctx, {
               type: "pie",
+
               data: {
                 labels: validMetrics.map((metric) => metric.name),
                 datasets: [
@@ -1609,6 +1635,56 @@
           }
         }
 
+        function renderTable2(month1) {
+          const data = workbookData[month1];
+          const head = document.getElementById("table2Head");
+          const body = document.getElementById("table2Body");
+
+          if (!data) return;
+
+          // Métricas que serão as linhas
+          const metrics = [
+            "Receita Líquida",
+            "CMV",
+            "Despesas Financeiras",
+            "Custos Fiscais",
+            "Receita Operacional",
+            "Ocupação",
+            "Pessoal",
+            "Administrativo",
+            "Marketing",
+            "Não Operacional",
+            "Resultado 2",
+          ];
+
+          // Criar cabeçalho
+          head.innerHTML = "";
+          const headerRow = document.createElement("tr");
+          headerRow.innerHTML = `<th>Métrica</th>`;
+          data.empresas.forEach((empresa) => {
+            headerRow.innerHTML += `<th>${empresa}</th>`;
+          });
+          head.appendChild(headerRow);
+          // css="table2-header">Métricas</th>
+          // Criar cabeçalho para o mês
+
+          // Criar linhas do corpo
+          body.innerHTML = "";
+          metrics.forEach((metric) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td><strong>${metric}</strong></td>`;
+            data.empresas.forEach((empresa) => {
+              const valor = data.dados[metric]?.[empresa] || 0;
+              row.innerHTML += `</strong></td>
+                            <td class="positive"> R$ ${Number(
+                              valor
+                            ).toLocaleString("pt-BR")}</td>`;
+            });
+            body.appendChild(row);
+          });
+        }
+
+        // Renderizar tabela de resumo
         function renderSummaryTable(month1, month2 = null) {
           try {
             const data1 = workbookData[month1];
