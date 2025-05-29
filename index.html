@@ -1635,6 +1635,7 @@
           }
         }
 
+        // Renderizar tabela de evolução financeira
         function renderTable2(month1) {
           const data = workbookData[month1];
           const head = document.getElementById("table2Head");
@@ -1642,7 +1643,6 @@
 
           if (!data) return;
 
-          // Métricas que serão as linhas
           const metrics = [
             "Receita Líquida",
             "CMV",
@@ -1657,7 +1657,7 @@
             "Resultado 2",
           ];
 
-          // Criar cabeçalho
+          // Cabeçalho
           head.innerHTML = "";
           const headerRow = document.createElement("tr");
           headerRow.innerHTML = `<th>Métrica</th>`;
@@ -1665,21 +1665,30 @@
             headerRow.innerHTML += `<th>${empresa}</th>`;
           });
           head.appendChild(headerRow);
-          // css="table2-header">Métricas</th>
-          // Criar cabeçalho para o mês
 
-          // Criar linhas do corpo
+          // Corpo
           body.innerHTML = "";
           metrics.forEach((metric) => {
             const row = document.createElement("tr");
             row.innerHTML = `<td><strong>${metric}</strong></td>`;
+
             data.empresas.forEach((empresa) => {
-              const valor = data.dados[metric]?.[empresa] || 0;
-              row.innerHTML += `</strong></td>
-                            <td class="positive"> R$ ${Number(
-                              valor
-                            ).toLocaleString("pt-BR")}</td>`;
+              const valor = Number(data.dados[metric]?.[empresa] || 0);
+              const receita = Number(
+                data.dados["Receita Líquida"]?.[empresa] || 1
+              ); // evitar divisão por zero
+              const percentual = receita
+                ? ((valor / receita) * 100).toFixed(2)
+                : 0;
+
+              row.innerHTML += `
+          <td class="positive"><strong>R$ ${valor.toLocaleString(
+            "pt-BR"
+          )}</strong>
+          <span style="color: var(--gray); font-size: 0.85em; font-weight: bold; text-align: left; display: block; margin-left: 0.1rem">${percentual}%</span>
+        </td>`;
             });
+
             body.appendChild(row);
           });
         }
